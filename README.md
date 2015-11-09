@@ -71,7 +71,7 @@ with additional middlewares as arguments. Each `Use()` call creates new
 middleware chain totally independent from parent. The following example extends 
 root chain with variables from `gorilla/mux` router. For standalone example of 
 `gorilla/mux` usage see [provided sample 
-code](https://github.com/andviro/noodle/examples/httprouter/main.go).
+code](https://github.com/andviro/noodle/blob/master/examples/gorilla/main.go).
 
 ```go
 func GorillaVars(next noodle.Handler) noodle.Handler {
@@ -93,7 +93,7 @@ context variables and serves user requests. The resulting handler implements
 `noodle.Handler` default empty context is created for each request. For further 
 `noodle.Handler` can be provided with externally created `context`. This 
 advanced usage is outlined in [httprouter adaptor 
-example](https://github.com/andviro/noodle/examples/httprouter/main.go).
+example](https://github.com/andviro/noodle/blob/master/examples/httprouter/main.go).
 
 ```go
 func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
