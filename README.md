@@ -128,7 +128,7 @@ n := noodle.Default()
 http.Handle("/", n.Then(panickyIndex))
 ```
 
-## License and credits
+## License
 
 This code is released under 
 [MIT](https://github.com/andviro/noodle/blob/master/LICENSE) license.
