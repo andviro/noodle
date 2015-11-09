@@ -1,0 +1,5 @@
+language: go
+
+install:
+  - go get golang.org/x/net/context
+  - go get gopkg.in/tylerb/is.v1
