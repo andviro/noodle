@@ -1,6 +1,6 @@
 # Noodle
 
-
+[![Build Status](https://travis-ci.org/andviro/noodle.svg?branch=master)](https://travis-ci.org/andviro/noodle) 
 [![Coverage](http://gocover.io/_badge/github.com/andviro/noodle?0)](http://gocover.io/github.com/andviro/noodle)  
 [![GoDoc](http://godoc.org/github.com/andviro/noodle?status.png)](http://godoc.org/github.com/andviro/noodle)
 
