@@ -127,3 +127,8 @@ func panickyIndex(c context.Context, w http.ResponseWriter, r *http.Request) err
 n := noodle.Default()
 http.Handle("/", n.Then(panickyIndex))
 ```
+
+## License and credits
+
+This code is released under 
+[MIT](https://github.com/andviro/noodle/blob/master/LICENSE) license.
