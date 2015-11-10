@@ -50,6 +50,22 @@ func handlerFactory(name string, keys ...string) Handler {
 	}
 }
 
+func dumbMwFactory(name string) dumbMiddleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, "%s?>", name)
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func negroniMwFactory(name string) negroniMiddleware {
+	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		fmt.Fprintf(w, "%s?>", name)
+		next(w, r)
+	}
+}
+
 func TestNew(t *testing.T) {
 	is := is.New(t)
 
@@ -93,19 +109,48 @@ func TestThen(t *testing.T) {
 	is.Equal("Abracadabra", serveAndRequest(h))
 }
 
-func TestDefaultMiddlewares(t *testing.T) {
-	is := is.New(t)
+func panickyHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	fmt.Fprintf(w, "Abracadabra")
+	panic("whoopsie!")
+}
 
+func runErrorPropagationTest(is *is.Is, extras ...Middleware) {
 	buf := new(bytes.Buffer)
 	log.SetOutput(buf)
 
-	h := Default().Then(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		fmt.Fprintf(w, "Abracadabra")
-		panic("whoopsie!")
-		return nil
-	})
-	res := serveAndRequest(h)
+	h := Default(extras...).Then(panickyHandler)
+	_ = serveAndRequest(h)
 	log := buf.String()
 	is.Equal("error = panic: whoopsie!", strings.TrimSpace(log[len(log)-25:]))
-	is.Equal("Abracadabra", res)
+}
+
+func TestDefaultMiddlewares(t *testing.T) {
+	is := is.New(t)
+	runErrorPropagationTest(is)
+}
+
+func runAdaptorTest(is *is.Is, converted Middleware) {
+	root := New(mwFactory("A"), converted, mwFactory("C"))
+	res := serveAndRequest(root.Then(handlerFactory("H1", "VarA", "VarC")))
+	is.Equal("A>B?>C>H1 [VarA=Avalue][VarC=Cvalue]", res)
+}
+
+func TestAdaptContextKeeps(t *testing.T) {
+	is := is.New(t)
+	runAdaptorTest(is, Adapt(dumbMwFactory("B")))
+}
+
+func TestAdaptErrorPropagates(t *testing.T) {
+	is := is.New(t)
+	runErrorPropagationTest(is, Adapt(dumbMwFactory("A")))
+}
+
+func TestAdaptNegroniContextKeeps(t *testing.T) {
+	is := is.New(t)
+	runAdaptorTest(is, AdaptNegroni(negroniMwFactory("B")))
+}
+
+func TestAdaptNegroniErrorPropagates(t *testing.T) {
+	is := is.New(t)
+	runErrorPropagationTest(is, AdaptNegroni(negroniMwFactory("A")))
 }

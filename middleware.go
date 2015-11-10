@@ -21,6 +21,14 @@ type Chain struct {
 	mws []Middleware
 }
 
+// dumbMiddleware is a convenience type for a generic closure-style
+// context unaware middleware
+type dumbMiddleware func(next http.Handler) http.Handler
+
+// negroniMiddleware is a convenience type for a middleware that is used in
+// Negroni package
+type negroniMiddleware func(http.ResponseWriter, *http.Request, http.HandlerFunc)
+
 // Recover is basic middleware that catches panics and converts them into
 // errors
 func Recover(next Handler) Handler {
@@ -81,5 +89,35 @@ func (c Chain) Then(final Handler) Handler {
 // http.Handler interface
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := context.TODO()
-	h(ctx, w, r)
+	_ = h(ctx, w, r)
+}
+
+// Adapt converts generic "dumb" middleware to context-aware, so that context
+// is maintained throgout calling chain and error value is propagated correctly
+func Adapt(mw dumbMiddleware) Middleware {
+	return func(next Handler) Handler {
+		return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
+			var err error
+			wrappedNext := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				err = next(c, w, r)
+			})
+			mw(wrappedNext).ServeHTTP(w, r)
+			return err
+		}
+	}
+}
+
+// AdaptNegroni converts negroni.Handler to context-aware, similar to
+// Adapt().
+func AdaptNegroni(mw negroniMiddleware) Middleware {
+	return func(next Handler) Handler {
+		return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
+			var err error
+			wrappedNext := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				err = next(c, w, r)
+			})
+			mw(w, r, wrappedNext)
+			return err
+		}
+	}
 }
