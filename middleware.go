@@ -66,7 +66,7 @@ func Default(mws ...Middleware) Chain {
 // Use appends its parameters to middleware chain. Returns new separate
 // middleware chain
 func (c Chain) Use(mws ...Middleware) (res Chain) {
-	mws = make([]Middleware, len(c)+len(mws))
+	res = make([]Middleware, len(c)+len(mws))
 	copy(res[:len(c)], c)
 	copy(res[len(c):], mws)
 	return
