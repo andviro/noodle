@@ -102,7 +102,7 @@ func Adapt(mw dumbMiddleware) Middleware {
 	}
 }
 
-// AdaptNegroni converts negroni.Handler to context-aware, similar to
+// AdaptNegroni converts negroni.HandlerFunc to context-aware Middleware, similar to
 // Adapt().
 func AdaptNegroni(mw negroniMiddleware) Middleware {
 	return func(next Handler) Handler {
