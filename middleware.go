@@ -17,9 +17,7 @@ type Handler func(context.Context, http.ResponseWriter, *http.Request) error
 type Middleware func(Handler) Handler
 
 // Chain composes middlewares into a single context-aware handler
-type Chain struct {
-	mws []Middleware
-}
+type Chain []Middleware
 
 // dumbMiddleware is a convenience type for a generic closure-style
 // context unaware middleware
@@ -57,10 +55,7 @@ func Logger(next Handler) Handler {
 
 // New creates new middleware Chain and initalizes it with its parameters
 func New(mws ...Middleware) Chain {
-	res := Chain{
-		mws: mws,
-	}
-	return res
+	return mws
 }
 
 // Default creates new middleware Chain with Recover middleware on top
@@ -71,16 +66,16 @@ func Default(mws ...Middleware) Chain {
 // Use appends its parameters to middleware chain. Returns new separate
 // middleware chain
 func (c Chain) Use(mws ...Middleware) (res Chain) {
-	res.mws = make([]Middleware, len(c.mws)+len(mws))
-	copy(res.mws[:len(c.mws)], c.mws)
-	copy(res.mws[len(c.mws):], mws)
+	mws = make([]Middleware, len(c)+len(mws))
+	copy(res[:len(c)], c)
+	copy(res[len(c):], mws)
 	return
 }
 
 // Then finalizes middleware Chain converting it to context-aware Handler
 func (c Chain) Then(final Handler) Handler {
-	for i := len(c.mws) - 1; i >= 0; i-- {
-		final = c.mws[i](final)
+	for i := len(c) - 1; i >= 0; i-- {
+		final = c[i](final)
 	}
 	return final
 }
