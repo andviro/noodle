@@ -10,6 +10,16 @@ package, but relies on Golang net
 [contexts](http://godoc.org/golang.org/x/net/context) for threading request 
 environment through handler chains.
 
+## Highlights
+
+- Simple and minimalistic
+- Strictly adheres to guidelines of [context](http://godoc.org/golang.org/x/net/context) package
+- Noodle Handlers are context-aware and return error for easier error handling
+- Finalized Noodle Handlers implement http.Handler interface, and easy to use 
+  with routing library of choice
+- Baked-in Adapters allow integration of third-party middlewares without 
+  breaking of context and error propagation
+
 ## Middleware and handlers
 
 `noodle.Middleware` is a generic `func(Handler) Handler` bidirectional 
@@ -88,7 +98,7 @@ n = n.Use(GorillaVars)
 
 Middleware chain is finalized and converted to `noodle.Handler` with
 `Then()` method. Its first parameter is an application handler that consumes 
-context variables and serves user requests. The resulting handler implements
+context and serves user requests. The resulting handler implements
 `http.Handler` interface providing `ServeHTTP` method. When serving HTTP from 
 `noodle.Handler` default empty context is created for each request. For further 
 flexibility `noodle.Handler` can be provided with externally created `context`. This 
@@ -128,6 +138,52 @@ n := noodle.Default()
 http.Handle("/", n.Then(panickyIndex))
 ```
 
+## Compatibility with third-party middleware
+
+`noodle.Adapt` converts generic middleware constructor with signature 
+`func(http.Handler) http.Handler` to Noodle Middleware. Resulting constructor 
+can be easily integrated into existing `noodle.Chain` with `Use` method. While 
+converted middleware can not consume request context and is not able to return 
+any error, context propagation is not broken and error values will bubble up 
+from further handlers in chain. This allows usage of various middlewares 
+written for third-party middleware libraries, like 
+[interpose](https://github.com/carbocation/interpose).
+
+```go
+
+func DumbMid(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.RequestWriter, r *http.Request){
+        fmt.Fprintf(w, "I'm dumb and proud of it!!!")
+        next.ServeHTTP(w, r)
+    })
+}
+
+...
+// AwareMid2 will consume context from AwareMid1
+n := noodle.New(AwareMid1, noodle.Adapt(DumbMid), AwareMid2)
+http.Handle("/", n.Then(indexHandler))
+```
+
+`noodle.AdaptNegroni` creates `noodle.Middleware` from function with signature 
+`func(http.ResponseWriter, *http.Request, http.HandlerFunc)`. This adaptor 
+simplifies integration of middlewares written for 
+[negroni](https://github.com/codegangsta/negroni)
+package.
+
+
+```go
+
+func NegroniHandler (w http.RequestWriter, r *http.Request, next http.HandlerFunc){
+        fmt.Fprintf(w, "Hi, I'm a Negroni middleware!!!")
+        next(w, r)
+    })
+}
+
+...
+// AwareMid2 will consume context from AwareMid1
+n := noodle.New(AwareMid1, noodle.AdaptNegroni(NegroniHandler), AwareMid2)
+http.Handle("/", n.Then(indexHandler))
+```
 ## License
 
 This code is released under 
