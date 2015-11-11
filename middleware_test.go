@@ -50,7 +50,7 @@ func handlerFactory(name string, keys ...string) Handler {
 	}
 }
 
-func dumbMwFactory(name string) dumbMiddleware {
+func dumbMwFactory(name string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "%s?>", name)
@@ -59,7 +59,7 @@ func dumbMwFactory(name string) dumbMiddleware {
 	}
 }
 
-func negroniMwFactory(name string) negroniMiddleware {
+func negroniMwFactory(name string) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		fmt.Fprintf(w, "%s?>", name)
 		next(w, r)

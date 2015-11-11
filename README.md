@@ -173,10 +173,9 @@ package.
 
 ```go
 
-func NegroniHandler (w http.RequestWriter, r *http.Request, next http.HandlerFunc){
-        fmt.Fprintf(w, "Hi, I'm a Negroni middleware!!!")
-        next(w, r)
-    })
+func NegroniHandler (w http.RequestWriter, r *http.Request, next http.HandlerFunc) {
+    fmt.Fprintf(w, "Hi, I'm a Negroni middleware!!!")
+    next(w, r)
 }
 
 ...
