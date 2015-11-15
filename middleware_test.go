@@ -109,6 +109,17 @@ func TestThen(t *testing.T) {
 	is.Equal("Abracadabra", serveAndRequest(h))
 }
 
+func TestOrigin(t *testing.T) {
+	is := is.New(t)
+	Origin = context.WithValue(context.TODO(), "testKey", "testValue")
+
+	h := New().Then(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		fmt.Fprintf(w, "%s Abracadabra", ctx.Value("testKey").(string))
+		return nil
+	})
+	is.Equal("testValue Abracadabra", serveAndRequest(h))
+}
+
 func panickyHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	fmt.Fprintf(w, "Abracadabra")
 	panic("whoopsie!")

@@ -2,6 +2,7 @@ package noodle
 
 import (
 	"fmt"
+	"github.com/andviro/noodle/store"
 	"golang.org/x/net/context"
 	"log"
 	"net/http"
@@ -19,7 +20,12 @@ type Middleware func(Handler) Handler
 // Chain composes middlewares into a single context-aware handler
 type Chain []Middleware
 
-// Recover is basic middleware that catches panics and converts them into
+// Origin is the root context for all requests. By default it contains
+// reference to global thread-safe Store. Origin can be extended or overwritten to
+// provide common application-wide initial context.
+var Origin = store.WithGlobal(context.TODO())
+
+// Recover is a basic middleware that catches panics and converts them into
 // errors
 func Recover(next Handler) Handler {
 	return func(c context.Context, w http.ResponseWriter, r *http.Request) (err error) {
@@ -45,6 +51,14 @@ func Logger(next Handler) Handler {
 	}
 }
 
+// RequestLocal is a middleware that injects common data store into
+// request context
+func RequestLocal(next Handler) Handler {
+	return func(c context.Context, w http.ResponseWriter, r *http.Request) (err error) {
+		return next(store.WithLocal(c), w, r)
+	}
+}
+
 // New creates new middleware Chain and initalizes it with its parameters
 func New(mws ...Middleware) Chain {
 	return mws
@@ -52,7 +66,7 @@ func New(mws ...Middleware) Chain {
 
 // Default creates new middleware Chain with Recover middleware on top
 func Default(mws ...Middleware) Chain {
-	return New(Logger, Recover).Use(mws...)
+	return New(RequestLocal, Logger, Recover).Use(mws...)
 }
 
 // Use appends its parameters to middleware chain. Returns new separate
@@ -75,8 +89,7 @@ func (c Chain) Then(final Handler) Handler {
 // ServeHTTP creates empty context and applies Handler to it, satisfying
 // http.Handler interface
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := context.TODO()
-	_ = h(ctx, w, r)
+	_ = h(Origin, w, r)
 }
 
 // Adapt converts generic "dumb" middleware to context-aware, so that context

@@ -12,7 +12,7 @@ import (
 // httprouter.Params are injected into context under key "Params"
 func HR(h noodle.Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		ctx := context.WithValue(context.TODO(), "Params", p)
+		ctx := context.WithValue(noodle.Factory(), "Params", p)
 		h(ctx, w, r)
 	}
 }

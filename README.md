@@ -116,6 +116,44 @@ func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
 http.Handle("/", n.Then(index))
 ```
 
+## Initial context
+
+`noodle.Origin` is a package-wide global variable that provides starting
+context for all HTTP handlers. The following example initializes root context
+with a global channel for some application-wide message passing. 
+
+```go
+...
+// Global message bus is stored in root context for each request
+messageBus := make(chan string)
+noodle.Origin = context.WithValue(context.TODO(), "bus", messageBus)
+// Here we'll do some application-wide message processing
+go func() {
+    for msg := range messageBus {
+        fmt.Println(msg)
+    }
+}()
+...
+```
+
+Then this global channel may be used for passing messages from handlers to some
+global listener.
+
+```go
+func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
+    bus := c.Value("bus").(chan string) // Acquire global message bus
+    fmt.Fprintln(w, "index")
+    bus <- "hello"
+    return nil
+}
+```
+
+Note that global factory function will never be used if `noodle.Handler` is
+called directly, as in httprouter adapter example. To maintain
+compatibility, it acquires initial context by calling `noodle.Factory`
+explicitly.
+
+
 ## Logging and recovery
 
 Package `noodle` comes with baked-in `Logger` and `Recovery` middlewares that 

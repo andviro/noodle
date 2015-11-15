@@ -5,9 +5,11 @@ import (
 	"github.com/andviro/noodle"
 	"github.com/gorilla/mux"
 	"golang.org/x/net/context"
+	"log"
 	"net/http"
 )
 
+// GorillaVars injects Gorilla mux route variables into context
 func GorillaVars(next noodle.Handler) noodle.Handler {
 	return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
 		withVars := context.WithValue(c, "Vars", mux.Vars(r))
@@ -31,5 +33,5 @@ func main() {
 	n := noodle.Default(GorillaVars)
 	r.Handle("/", n.Then(index))
 	r.Handle("/products/{id}", n.Then(products))
-	http.ListenAndServe(":8080", r)
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
