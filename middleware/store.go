@@ -7,10 +7,6 @@ import (
 	"net/http"
 )
 
-const (
-	storeKey int = iota
-)
-
 // LocalStore is a middleware that injects common data store into
 // request context
 func LocalStore(next noodle.Handler) noodle.Handler {
@@ -19,8 +15,8 @@ func LocalStore(next noodle.Handler) noodle.Handler {
 	}
 }
 
-// GetStore extracts common store from context
-func GetStore(c context.Context) (*store.Store, bool) {
-	res, ok := c.Value(storeKey).(*store.Store)
-	return res, ok
+// GetStore returns common store extracted from context or nil if no store was found
+func GetStore(c context.Context) *store.Store {
+	res, _ := c.Value(storeKey).(*store.Store)
+	return res
 }
