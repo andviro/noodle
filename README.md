@@ -53,8 +53,7 @@ func HTTPAuth(authFunc func(username, password string) bool) noodle.Middleware
 }
 ```
 
-Note that similar HTTP Basic Auth middleware is included in noodle `middleware`
-subpackage discussed below.
+Note that similar [HTTP Basic Auth middleware](https://godoc.org/github.com/andviro/noodle/middleware#HTTPAuth) is included in `middleware` subpackage discussed below.
 
 `noodle.Handler` provides context-aware `http.Handler` with `error` return 
 value for enhanced chaining. Assuming that some middleware stored user login in 
