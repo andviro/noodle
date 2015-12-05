@@ -206,6 +206,38 @@ request-local store can be created with `middleware.Default()` constructor.
 Refer to package [documentation](http://godoc.org/github.com/andviro/noodle/middleware) for
 further information on provided middlewares.
 
+## Rendering of handler results
+
+Package [render](http://godoc.org/github.com/andviro/noodle/render) provides
+basic middleware for serialization of handler-supplied values, similar to the
+example above. The only difference is that handler must call `render.Yield`
+function to pass its data back to `render.JSON` middleware through context.
+Example usage of render middleware follows:
+
+```go
+import (
+    mw "github.com/andviro/noodle/middleware"
+    "github.com/andviro/noodle/render"
+)
+
+
+type TestStruct struct {
+	A int    `json:"a"`
+	B string `json:"b"`
+}
+
+func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
+	testData := TestStruct{1, "Ohohoho"}
+    render.Yield(c, &testData)
+    return nil
+})
+
+...
+
+n := mw.Default(render.JSON)
+http.Handle("/", n.Then(index))
+```
+
 ## Compatibility with third-party middleware
 
 Subpackage [adapt](http://godoc.org/github.com/andviro/noodle/adapt)
