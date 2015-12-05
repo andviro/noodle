@@ -105,10 +105,10 @@ n = n.Use(GorillaVars)
 Middleware chain is finalized and converted to `noodle.Handler` with
 `Then()` method. Its first parameter is an application handler that consumes 
 context and serves user requests. The resulting handler implements
-`http.Handler` interface providing `ServeHTTP` method. When serving HTTP from 
-`noodle.Handler` default empty context is created for each request. For further 
-flexibility `noodle.Handler` can be provided with externally created `context`. This 
-advanced usage is outlined in [httprouter adaptor 
+`http.Handler` interface providing `ServeHTTP` method. When serving HTTP from
+`noodle.Handler` default empty context is passed to each request. For further
+flexibility `noodle.Handler` can be provided with externally created `context`.
+This advanced usage is outlined in [httprouter adaptor
 example](https://github.com/andviro/noodle/blob/master/examples/httprouter/main.go).
 
 ```go

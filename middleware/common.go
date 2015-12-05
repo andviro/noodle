@@ -1,6 +1,7 @@
 package middleware
 
 const (
-	bindKey  int = iota
-	storeKey int = iota
+	bindKey int = iota
+	storeKey
+	userKey
 )

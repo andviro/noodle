@@ -15,7 +15,7 @@ func LocalStore(next noodle.Handler) noodle.Handler {
 	}
 }
 
-// GetStore returns common store extracted from context or nil if no store was found
+// GetStore extracts common store from context
 func GetStore(c context.Context) *store.Store {
 	res, _ := c.Value(storeKey).(*store.Store)
 	return res
