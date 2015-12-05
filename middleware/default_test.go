@@ -9,5 +9,5 @@ import (
 func TestDefault(t *testing.T) {
 	is := is.New(t)
 	def := mw.Default()
-	is.Equal(len(def), 3)
+	is.NotNil(def)
 }

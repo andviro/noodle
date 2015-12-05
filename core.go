@@ -5,9 +5,18 @@ import (
 	"net/http"
 )
 
+// origin is the root context for all requests
+var origin = context.TODO()
+
 // Handler provides context-aware http.Handler with error return value for
 // enhanced chaining
 type Handler func(context.Context, http.ResponseWriter, *http.Request) error
+
+// ServeHTTP creates empty context and applies Handler to it, satisfying
+// http.Handler interface
+func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	_ = h(origin, w, r)
+}
 
 // Middleware behaves like standard closure middleware pattern, only with
 // context-aware handler type
@@ -23,11 +32,11 @@ func New(mws ...Middleware) Chain {
 
 // Use appends its parameters to middleware chain. Returns new separate
 // middleware chain
-func (c Chain) Use(mws ...Middleware) (res Chain) {
-	res = make([]Middleware, len(c)+len(mws))
+func (c Chain) Use(mws ...Middleware) Chain {
+	res := make([]Middleware, len(c)+len(mws))
 	copy(res[:len(c)], c)
 	copy(res[len(c):], mws)
-	return
+	return res
 }
 
 // Then finalizes middleware Chain converting it to context-aware Handler
@@ -36,13 +45,4 @@ func (c Chain) Then(final Handler) Handler {
 		final = c[i](final)
 	}
 	return final
-}
-
-// origin is the root context for all requests
-var origin = context.TODO()
-
-// ServeHTTP creates empty context and applies Handler to it, satisfying
-// http.Handler interface
-func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	_ = h(origin, w, r)
 }

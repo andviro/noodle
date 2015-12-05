@@ -12,7 +12,7 @@ environment through handler chains.
 
 ## Highlights
 
-- Simple and minimalistic: <30 LOC in "core.go"
+- Simple and minimalistic: <30 LOC in core package
 - Strictly adheres to guidelines of [context](http://godoc.org/golang.org/x/net/context) package
 - Noodle Handlers are context-aware and return error for easier error handling
 - Finalized Noodle Handlers implement http.Handler interface, and easy to use 
@@ -87,7 +87,7 @@ middleware chain totally independent from parent. The following example extends
 root chain with variables from `gorilla/mux` router. For standalone example of
 `gorilla/mux` usage see [provided sample
 code](https://github.com/andviro/noodle/blob/master/examples/gorilla/main.go)
-and `adaptors` subpackage.
+and `adapt/gorilla` subpackage.
 
 ```go
 func GorillaVars(next noodle.Handler) noodle.Handler {
@@ -110,7 +110,7 @@ empty context is passed to each request. For further flexibility
 `noodle.Handler` can be provided with externally created `context`. This
 advanced usage is outlined in [httprouter adaptor
 example](https://github.com/andviro/noodle/blob/master/examples/httprouter/main.go)
-and put to use in `httprouter` adaptor.
+and put to use in `adapt/httprouter` subpackage.
 
 ```go
 func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -198,20 +198,27 @@ http.Handle("/", n.Then(index))
 For convenience, initial `noodle.Chain` with logging, recovery and
 request-local store can be created with `middleware.Default()` constructor.
 
-Refer to package documentation for further information on provided middlewares.
+Refer to package [documentation](http://godoc.org/github.com/andviro/noodle/middleware) for
+further information on provided middlewares.
 
 ## Compatibility with third-party middleware
 
-`noodle.Adapt` converts generic middleware constructor with signature 
-`func(http.Handler) http.Handler` to Noodle Middleware. Resulting constructor 
-can be easily integrated into existing `noodle.Chain` with `Use` method. While 
-converted middleware can not consume request context and is not able to return 
-any error, context propagation is not broken and error values will bubble up 
-from further handlers in chain. This allows usage of various middlewares 
-written for third-party middleware libraries, like 
+Subpackage `adapt` contains adaptors for third-party middleware libraries.
+`adapt.Http` converts generic middleware constructor with signature
+`func(http.Handler) http.Handler` to `noodle.Middleware`. Resulting constructor
+can be easily integrated into existing `noodle.Chain` with `Use` method. While
+converted middleware can not consume request context and is not able to return
+any error, context propagation is not broken and error values will bubble up
+from further handlers in chain. This allows usage of various middlewares
+written for third-party middleware libraries, like
 [interpose](https://github.com/carbocation/interpose).
 
 ```go
+
+import (
+    "github.com/andviro/noodle"
+    "github.com/andviro/noodle/adapt"
+)
 
 func DumbMid(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.RequestWriter, r *http.Request){
@@ -221,16 +228,15 @@ func DumbMid(next http.Handler) http.Handler {
 }
 
 ...
-// AwareMid2 will consume context from AwareMid1
-n := noodle.New(AwareMid1, noodle.Adapt(DumbMid), AwareMid2)
+// AwareMid2 and indexHandler will consume context from AwareMid1
+n := noodle.New(AwareMid1, adapt.Http(DumbMid), AwareMid2)
 http.Handle("/", n.Then(indexHandler))
 ```
 
-`noodle.AdaptNegroni` creates `noodle.Middleware` from function with signature 
-`func(http.ResponseWriter, *http.Request, http.HandlerFunc)`. This adaptor 
-simplifies integration of middlewares written for 
-[negroni](https://github.com/codegangsta/negroni)
-package.
+`adapt.Negroni` creates `noodle.Middleware` from function with signature
+`func(http.ResponseWriter, *http.Request, http.HandlerFunc)`. This adaptor
+simplifies integration of middlewares written for
+[negroni](https://github.com/codegangsta/negroni) package.
 
 
 ```go
@@ -242,9 +248,19 @@ func NegroniHandler (w http.RequestWriter, r *http.Request, next http.HandlerFun
 
 ...
 // AwareMid2 will consume context from AwareMid1
-n := noodle.New(AwareMid1, noodle.AdaptNegroni(NegroniHandler), AwareMid2)
+n := noodle.New(AwareMid1, adapt.Negroni(NegroniHandler), AwareMid2)
 http.Handle("/", n.Then(indexHandler))
 ```
+
+## Convenience adaptors
+
+For compatibility with popular router packages, such as [Gorilla
+mux](https://github.com/gorilla/mux) and
+[httprouter](https://github.com/julienschmidt/httprouter) corresponding
+[middleware](http://godoc.org/github.com/andviro/noodle/adapt/gorilla) are and
+[adaptor struct](http://godoc.org/github.com/andviro/noodle/adapt/httprouter)
+are included.
+
 ## License
 
 This code is released under 

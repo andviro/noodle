@@ -2,20 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/andviro/noodle"
+	"github.com/andviro/noodle/adapt/gorilla"
+	mw "github.com/andviro/noodle/middleware"
 	"github.com/gorilla/mux"
 	"golang.org/x/net/context"
 	"log"
 	"net/http"
 )
-
-// GorillaVars injects Gorilla mux route variables into context
-func GorillaVars(next noodle.Handler) noodle.Handler {
-	return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
-		withVars := context.WithValue(c, "Vars", mux.Vars(r))
-		return next(withVars, w, r)
-	}
-}
 
 func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
 	fmt.Fprintln(w, "index")
@@ -23,14 +16,14 @@ func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
 }
 
 func products(c context.Context, w http.ResponseWriter, r *http.Request) error {
-	vars := c.Value("Vars").(map[string]string)
+	vars := gorilla.GetVars(c)
 	fmt.Fprintf(w, "products: %s", vars["id"])
 	return nil
 }
 
 func main() {
 	r := mux.NewRouter()
-	n := noodle.Default(GorillaVars)
+	n := mw.Default(gorilla.Vars)
 	r.Handle("/", n.Then(index))
 	r.Handle("/products/{id}", n.Then(products))
 	log.Fatal(http.ListenAndServe(":8080", r))
