@@ -38,14 +38,11 @@ func (c Chain) Then(final Handler) Handler {
 	return final
 }
 
-// origin is the root context for all requests. By default it contains
-// reference to global thread-safe Store. Origin can be extended or overwritten to
-// provide common application-wide initial context.
+// origin is the root context for all requests
 var origin = context.TODO()
 
 // ServeHTTP creates empty context and applies Handler to it, satisfying
 // http.Handler interface
-
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_ = h(origin, w, r)
 }
