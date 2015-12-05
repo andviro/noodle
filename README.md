@@ -12,13 +12,15 @@ environment through handler chains.
 
 ## Highlights
 
-- Simple and minimalistic
+- Simple and minimalistic: <30 LOC in "core.go"
 - Strictly adheres to guidelines of [context](http://godoc.org/golang.org/x/net/context) package
 - Noodle Handlers are context-aware and return error for easier error handling
 - Finalized Noodle Handlers implement http.Handler interface, and easy to use 
   with routing library of choice
-- Baked-in Adapters allow integration of third-party middlewares without 
-  breaking of context and error propagation
+* Batteries included: contains collection of essential middlewares such as
+  Logger, Recovery etc., all context-aware. 
+* Includes adapter collection that allow integration of third-party
+  middlewares without breaking of context and error propagation
 
 ## Middleware and handlers
 
@@ -51,6 +53,9 @@ func HTTPAuth(authFunc func(username, password string) bool) noodle.Middleware
 }
 ```
 
+Note that similar HTTP Basic Auth middleware is included in noodle `middleware`
+subpackage discussed below.
+
 `noodle.Handler` provides context-aware `http.Handler` with `error` return 
 value for enhanced chaining. Assuming that some middleware stored user login in 
 request context, the following handler outputs personalized greeting:
@@ -76,12 +81,13 @@ basicAuth := HTTPAuth(func(username, password string) bool {
 n := noodle.New(basicAuth)
 ```
 
-At any moment `noodle.Chain` can be extended by calling `Use()` method with 
-with additional middlewares as arguments. Each `Use()` call creates new 
-middleware chain totally independent from parent. The following example extends 
-root chain with variables from `gorilla/mux` router. For standalone example of 
-`gorilla/mux` usage see [provided sample 
-code](https://github.com/andviro/noodle/blob/master/examples/gorilla/main.go).
+At any moment `noodle.Chain` can be extended by calling `Use()` method with
+some additional middlewares as arguments. Each `Use()` call creates new
+middleware chain totally independent from parent. The following example extends
+root chain with variables from `gorilla/mux` router. For standalone example of
+`gorilla/mux` usage see [provided sample
+code](https://github.com/andviro/noodle/blob/master/examples/gorilla/main.go)
+and `adaptors` subpackage.
 
 ```go
 func GorillaVars(next noodle.Handler) noodle.Handler {
@@ -115,44 +121,6 @@ func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
 
 http.Handle("/", n.Then(index))
 ```
-
-## Initial context
-
-`noodle.Origin` is a package-wide global variable that provides starting
-context for all HTTP handlers. The following example initializes root context
-with a global channel for some application-wide message passing. 
-
-```go
-...
-// Global message bus is stored in root context for each request
-messageBus := make(chan string)
-noodle.Origin = context.WithValue(context.TODO(), "bus", messageBus)
-// Here we'll do some application-wide message processing
-go func() {
-    for msg := range messageBus {
-        fmt.Println(msg)
-    }
-}()
-...
-```
-
-Then this global channel may be used for passing messages from handlers to some
-global listener.
-
-```go
-func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
-    bus := c.Value("bus").(chan string) // Acquire global message bus
-    fmt.Fprintln(w, "index")
-    bus <- "hello"
-    return nil
-}
-```
-
-Note that global factory function will never be used if `noodle.Handler` is
-called directly, as in httprouter adapter example. To maintain
-compatibility, it acquires initial context by calling `noodle.Factory`
-explicitly.
-
 
 ## Logging and recovery
 

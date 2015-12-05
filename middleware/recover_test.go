@@ -1,7 +1,8 @@
-package noodle_test
+package middleware_test
 
 import (
 	"github.com/andviro/noodle"
+	mw "github.com/andviro/noodle/middleware"
 	"golang.org/x/net/context"
 	"gopkg.in/tylerb/is.v1"
 	"net/http"
@@ -11,7 +12,7 @@ import (
 
 func TestRecover(t *testing.T) {
 	is := is.New(t)
-	n := noodle.New(noodle.Recover).Then(panickyHandler)
+	n := noodle.New(mw.Recover).Then(panickyHandler)
 	r, _ := http.NewRequest("GET", "http://localhost", nil)
 	err := n(context.TODO(), httptest.NewRecorder(), r)
 	is.Equal(err.Error(), "panic: whoopsie!")

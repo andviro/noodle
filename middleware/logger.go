@@ -1,6 +1,7 @@
-package noodle
+package middleware
 
 import (
+	"github.com/andviro/noodle"
 	"golang.org/x/net/context"
 	"log"
 	"net/http"
@@ -9,7 +10,7 @@ import (
 
 // Logger is a middleware that logs requests, along with
 // request URI, handler return value and request timing
-func Logger(next Handler) Handler {
+func Logger(next noodle.Handler) noodle.Handler {
 	return func(c context.Context, w http.ResponseWriter, r *http.Request) (err error) {
 		start := time.Now()
 		err = next(c, w, r)
