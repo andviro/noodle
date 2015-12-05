@@ -258,7 +258,7 @@ http.Handle("/", n.Then(indexHandler))
 For compatibility with popular router packages, such as [Gorilla
 mux](https://github.com/gorilla/mux) and
 [httprouter](https://github.com/julienschmidt/httprouter) corresponding
-[middleware](http://godoc.org/github.com/andviro/noodle/adapt/gorilla) are and
+[middleware](http://godoc.org/github.com/andviro/noodle/adapt/gorilla) and
 [adaptor struct](http://godoc.org/github.com/andviro/noodle/adapt/httprouter)
 are included.
 
