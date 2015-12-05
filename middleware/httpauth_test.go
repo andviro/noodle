@@ -26,6 +26,7 @@ func TestHttpAuth(t *testing.T) {
 	is.Err(err)
 	is.Equal(err, mw.UnauthorizedRequest)
 	is.Equal(w.Code, http.StatusUnauthorized)
+	is.Equal(w.Header().Get("WWW-Authenticate"), "Basic realm=test")
 
 	r.SetBasicAuth("testUser", "wrongPassword")
 	is.Err(n(context.TODO(), w, r))
