@@ -203,14 +203,15 @@ further information on provided middlewares.
 
 ## Compatibility with third-party middleware
 
-Subpackage `adapt` contains adaptors for third-party middleware libraries.
-`adapt.Http` converts generic middleware constructor with signature
-`func(http.Handler) http.Handler` to `noodle.Middleware`. Resulting constructor
-can be easily integrated into existing `noodle.Chain` with `Use` method. While
-converted middleware can not consume request context and is not able to return
-any error, context propagation is not broken and error values will bubble up
-from further handlers in chain. This allows usage of various middlewares
-written for third-party middleware libraries, like
+Subpackage [adapt](http://godoc.org/github.com/andviro/noodle/adapt)
+contains adaptors for third-party middleware libraries. `adapt.Http` converts
+generic middleware constructor with signature `func(http.Handler) http.Handler`
+to `noodle.Middleware`. Resulting constructor can be easily integrated into
+existing `noodle.Chain` with `Use` method. While converted middleware can not
+consume request context and is not able to return any error, context
+propagation is not broken and error values will bubble up from further handlers
+in chain. This allows usage of various middlewares written for third-party
+middleware libraries, like
 [interpose](https://github.com/carbocation/interpose).
 
 ```go
