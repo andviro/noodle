@@ -1,7 +1,7 @@
-package store
+package store_test
 
 import (
-	"golang.org/x/net/context"
+	"github.com/andviro/noodle/store"
 	"gopkg.in/tylerb/is.v1"
 	"testing"
 	"time"
@@ -9,7 +9,7 @@ import (
 
 func TestGetSet(t *testing.T) {
 	is := is.New(t)
-	s := New()
+	s := store.New()
 	s.Set("existingKey", 10)
 	val, ok := s.Get("existingKey")
 	is.True(ok)
@@ -18,30 +18,40 @@ func TestGetSet(t *testing.T) {
 	is.False(ok)
 }
 
-func TestMust(t *testing.T) {
+func TestDelete(t *testing.T) {
 	is := is.New(t)
-	s := New()
-	s.Set("existingKey", 10)
-	is.Equal(s.Must("existingKey").(int), 10)
-
+	s := store.New()
+	s.Set("key", "value")
+	is.Equal(s.MustGet("key").(string), "value")
+	s.Delete("key")
+	_, ok := s.Get("key")
+	is.False(ok)
 }
 
-func TestMustThrowsError(t *testing.T) {
+func TestMustGet(t *testing.T) {
+	is := is.New(t)
+	s := store.New()
+	s.Set("existingKey", 10)
+	is.Equal(s.MustGet("existingKey").(int), 10)
+}
+
+func TestMustGetPanics(t *testing.T) {
 	is := is.New(t)
 	var err error
-	func(s *Store) {
+	func(s *store.Store) {
 		defer func() {
 			err = recover().(error)
 		}()
-		_ = s.Must("not existingKey")
-	}(New())
+		_ = s.MustGet("not existingKey")
+	}(store.New())
 	is.Err(err)
-	is.Equal(err, NotFoundError)
+	_, ok := err.(store.KeyError)
+	is.True(ok)
 }
 
-func TestReadWaitsForUpdate(t *testing.T) {
+func TestViewWaitsForUpdate(t *testing.T) {
 	is := is.New(t)
-	s := New()
+	s := store.New()
 	begin := make(chan struct{})
 	s.Set("key", 0)
 	go func() {
@@ -55,21 +65,11 @@ func TestReadWaitsForUpdate(t *testing.T) {
 		})
 	}()
 	<-begin // Gate to begin read transaction
-	err := s.Read(func(t map[string]interface{}) error {
+	err := s.View(func(t map[string]interface{}) error {
 		x, ok := t["key"].(int)
 		is.True(ok)
 		is.Equal(x, 1)
 		return nil
 	})
 	is.NotErr(err)
-}
-
-func TestGlobalLocal(t *testing.T) {
-	is := is.New(t)
-	root := context.Background()
-	ctx := WithLocal(WithGlobal(root))
-	_, ok := Global(ctx)
-	is.True(ok)
-	_, ok = Local(ctx)
-	is.True(ok)
 }
