@@ -135,6 +135,9 @@ get access to following:
 * Panic recovery
 * Thread-safe request-global storage
 
+
+### Logger and recovery
+
 `Logger` provides basic request logging with some useful info about response
 timing. `Recovery` middleware wraps the panic object into `error` and passes it
 further for logger middleware to display.
@@ -157,6 +160,9 @@ func panickyIndex(c context.Context, w http.ResponseWriter, r *http.Request) err
 n := noodle.New(middleware.Logger, middleware.Recover)
 http.Handle("/", n.Then(panickyIndex))
 ```
+
+
+### LocalStore
 
 `LocalStore` middleware injects a thread-safe data store into the request
 context. This store can be used to pass variables back and forth along the
