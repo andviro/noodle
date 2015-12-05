@@ -102,14 +102,15 @@ n = n.Use(GorillaVars)
 
 ## Handling HTTP requests
 
-Middleware chain is finalized and converted to `noodle.Handler` with
-`Then()` method. Its first parameter is an application handler that consumes 
-context and serves user requests. The resulting handler implements
-`http.Handler` interface providing `ServeHTTP` method. When serving HTTP from
-`noodle.Handler` default empty context is passed to each request. For further
-flexibility `noodle.Handler` can be provided with externally created `context`.
-This advanced usage is outlined in [httprouter adaptor
-example](https://github.com/andviro/noodle/blob/master/examples/httprouter/main.go).
+Middleware chain is finalized and converted to `noodle.Handler` with `Then()`
+method. Its first parameter is an application handler that consumes context and
+serves user requests. The resulting handler implements `http.Handler` interface
+providing `ServeHTTP` method. When serving HTTP from `noodle.Handler` default
+empty context is passed to each request. For further flexibility
+`noodle.Handler` can be provided with externally created `context`. This
+advanced usage is outlined in [httprouter adaptor
+example](https://github.com/andviro/noodle/blob/master/examples/httprouter/main.go)
+and put to use in `httprouter` adaptor.
 
 ```go
 func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -122,15 +123,28 @@ func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
 http.Handle("/", n.Then(index))
 ```
 
-## Logging and recovery
+## Baked-in middlewares
 
-Package `noodle` comes with baked-in `Logger` and `Recovery` middlewares that 
-provide just that, logging and recovery. For convenience, root `noodle.Chain` 
-with baked-in logging and recovery can be created with `noodle.Default()` 
-constructor. Default recovery middleware wraps the panic object into `error` 
-and passes it further for logger middleware to display.
+Package `noodle` comes with a collection of essential middlewares organized
+into the `middleware` package. Import "github.com/andviro/noodle/middleware" to
+get access to following:
+
+* Binding of request body to Golang structures
+* HTTP Basic Auth middleware
+* Logger
+* Panic recovery
+* Thread-safe request-global storage
+
+`Logger` provides basic request logging with some useful info about response
+timing. `Recovery` middleware wraps the panic object into `error` and passes it
+further for logger middleware to display.
+
 
 ```go
+
+import (
+    "github.com/andviro/noodle/middleware"
+)
 
 func panickyIndex(c context.Context, w http.ResponseWriter, r *http.Request) error {
     ...
@@ -140,9 +154,51 @@ func panickyIndex(c context.Context, w http.ResponseWriter, r *http.Request) err
 
 ...
 
-n := noodle.Default()
+n := noodle.New(middleware.Logger, middleware.Recover)
 http.Handle("/", n.Then(panickyIndex))
 ```
+
+`LocalStore` middleware injects a thread-safe data store into the request
+context. This store can be used to pass variables back and forth along the
+middleware chain. Consider a handler that sets some variable in request-local
+store and a middleware that wraps that handler and uses that variable after
+handler execution to render output in JSON format:
+
+```go
+
+func RenderJSON(next noodle.Handler) noodle.Nandler {
+    return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
+        if err := next(c, w, r); err != nil {
+            return err
+        }
+        // Expect some "data" value in local store
+        data := middleware.GetStore(c).MustGet("data")
+        json.NewEncoder(w).Encode(data)
+        return nil
+    }
+}
+
+func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
+    var res struct {
+        A int
+        B string
+    }{1, "Ahahaha"}
+
+    // This value will be caught by RenderJson middleware
+    middleware.GetStore(c).Set("data", &res)
+    return nil
+}
+
+...
+
+n := noodle.New(middleware.LocalStore, RenderJSON)
+http.Handle("/", n.Then(index))
+```
+
+For convenience, initial `noodle.Chain` with logging, recovery and
+request-local store can be created with `middleware.Default()` constructor.
+
+Refer to package documentation for further information on provided middlewares.
 
 ## Compatibility with third-party middleware
 

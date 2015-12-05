@@ -32,7 +32,7 @@ func (s *Store) Get(key string) (interface{}, bool) {
 	return data, ok
 }
 
-// Must reads value from the store and panics if there's no such key
+// MustGet reads value from the store and panics if there's no such key
 func (s *Store) MustGet(key string) interface{} {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
