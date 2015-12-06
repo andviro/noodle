@@ -5,11 +5,13 @@ import (
 	"github.com/andviro/noodle"
 	"golang.org/x/net/context"
 	"net/http"
+	"sync"
 )
 
 var renderKey int = 0
 
 type renderResult struct {
+	mu   sync.RWMutex // guards data
 	data interface{}
 }
 
@@ -24,6 +26,9 @@ func JSON(next noodle.Handler) noodle.Handler {
 			return err
 		}
 		w.Header().Set("Content-Type", "application/json")
+
+		res.mu.RLock()
+		defer res.mu.RUnlock()
 		return json.NewEncoder(w).Encode(res.data)
 	}
 }
@@ -31,5 +36,7 @@ func JSON(next noodle.Handler) noodle.Handler {
 // Yield puts arbitrary object into context for subsequent rendering into response
 func Yield(c context.Context, data interface{}) {
 	dest := c.Value(renderKey).(*renderResult)
+	dest.mu.Lock() // better safe than sorry
+	defer dest.mu.Unlock()
 	dest.data = data
 }
