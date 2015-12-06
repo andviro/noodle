@@ -33,7 +33,7 @@ func (l *logWriter) Write(buf []byte) (int, error) {
 }
 
 func (l *logWriter) Code() int {
-	if !l.headerWritten {
+	if l.code == 0 {
 		return 200
 	}
 	return l.code
