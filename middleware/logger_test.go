@@ -22,6 +22,7 @@ func TestLogger(t *testing.T) {
 
 	n := noodle.New(mw.Logger).Then(
 		func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			w.WriteHeader(400)
 			return testError
 		},
 	)
@@ -31,5 +32,6 @@ func TestLogger(t *testing.T) {
 	logString := buf.String()
 	is.Equal(err, testError)
 	is.True(strings.Contains(logString, "GET"))
+	is.True(strings.Contains(logString, "(400)"))
 	is.True(strings.Contains(logString, "test error"))
 }
