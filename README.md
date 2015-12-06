@@ -128,7 +128,6 @@ Package `noodle` comes with a collection of essential middlewares organized
 into the `middleware` package. Import "github.com/andviro/noodle/middleware" to
 get access to following:
 
-* Binding of request body to Golang structures
 * HTTP Basic Auth middleware
 * Logger
 * Panic recovery
@@ -237,6 +236,41 @@ func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
 n := mw.Default(render.JSON)
 http.Handle("/", n.Then(index))
 ```
+
+## Request binding 
+
+Package [bind](http://godoc.org/github.com/andviro/noodle/bind) allows to bind
+request body to supplied model. Handlers retrieve bound objects using
+`bind.GetData` function.
+
+```go
+import (
+    mw "github.com/andviro/noodle/middleware"
+    "github.com/andviro/noodle/bind"
+    "github.com/andviro/noodle/render"
+)
+
+type TestStruct struct {
+	A int    `json:"a"`
+	B string `json:"b"`
+}
+
+func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
+    data := bind.GetData(c).(*TestStruct) // Get parsed data from context
+    // Use model data
+    ...
+    return nil
+})
+
+...
+
+n := mw.Default()
+// The following handler will bind request body to TestStruct type
+http.Handle("/", n.Use(bind.JSON(TestStruct{})).Then(index))
+```
+
+Currently only binding of JSON is supported. XML, form data, etc is work in
+progress. PRs are appreciated.
 
 ## Compatibility with third-party middleware
 

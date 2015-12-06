@@ -1,4 +1,4 @@
-package middleware
+package bind
 
 import (
 	"encoding/json"
@@ -8,9 +8,15 @@ import (
 	"reflect"
 )
 
-// BindJSON constructs middleware that parses request body according to provided model
+type key int
+
+var (
+	bindKey key = 0
+)
+
+// JSON constructs middleware that parses request body according to provided model
 // and injects parsed object into context
-func BindJSON(model interface{}) noodle.Middleware {
+func JSON(model interface{}) noodle.Middleware {
 	typeModel := reflect.TypeOf(model)
 	if typeModel.Kind() == reflect.Ptr {
 		panic("Bind to pointer is not allowed")
@@ -27,7 +33,7 @@ func BindJSON(model interface{}) noodle.Middleware {
 	}
 }
 
-// GetBindData extracts data parsed from upstream Bind operation
-func GetBindData(c context.Context) interface{} {
+// GetData extracts data parsed from upstream Bind operation
+func GetData(c context.Context) interface{} {
 	return c.Value(bindKey)
 }

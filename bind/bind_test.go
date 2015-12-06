@@ -1,9 +1,9 @@
-package middleware_test
+package bind_test
 
 import (
 	"bytes"
 	"github.com/andviro/noodle"
-	mw "github.com/andviro/noodle/middleware"
+	"github.com/andviro/noodle/bind"
 	"golang.org/x/net/context"
 	"gopkg.in/tylerb/is.v1"
 	"net/http"
@@ -18,7 +18,7 @@ type TestStruct struct {
 
 func bindHandlerFactory(is *is.Is) noodle.Handler {
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		s, ok := mw.GetBindData(ctx).(*TestStruct)
+		s, ok := bind.GetData(ctx).(*TestStruct)
 		is.True(ok)
 		is.Equal(s.A, 1)
 		is.Equal(s.B, "Ololo")
@@ -31,7 +31,7 @@ func TestBindJSON(t *testing.T) {
 	buf := bytes.NewBuffer([]byte(`{"a": 1, "b": "Ololo"}`))
 	emptyBuf := bytes.NewBuffer([]byte{})
 
-	n := noodle.New(mw.BindJSON(TestStruct{})).Then(bindHandlerFactory(is))
+	n := noodle.New(bind.JSON(TestStruct{})).Then(bindHandlerFactory(is))
 	r, _ := http.NewRequest("POST", "http://localhost", buf)
 	is.NotErr(n(context.TODO(), httptest.NewRecorder(), r))
 
@@ -47,7 +47,7 @@ func TestBindJSONPanicsOnPointer(t *testing.T) {
 		defer func() {
 			err = recover()
 		}()
-		_ = mw.BindJSON(&TestStruct{})
+		_ = bind.JSON(&TestStruct{})
 	}()
 	is.Equal(err.(string), "Bind to pointer is not allowed")
 }
