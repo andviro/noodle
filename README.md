@@ -247,7 +247,6 @@ request body to supplied model. Handlers retrieve bound objects using
 import (
     mw "github.com/andviro/noodle/middleware"
     "github.com/andviro/noodle/bind"
-    "github.com/andviro/noodle/render"
 )
 
 type TestStruct struct {
