@@ -12,6 +12,7 @@ var renderKey int = 0
 
 type renderResult struct {
 	mu   sync.RWMutex // guards data
+	code int
 	data interface{}
 }
 
@@ -29,14 +30,19 @@ func JSON(next noodle.Handler) noodle.Handler {
 
 		res.mu.RLock()
 		defer res.mu.RUnlock()
+		if res.code != 0 {
+			w.WriteHeader(res.code)
+		}
 		return json.NewEncoder(w).Encode(res.data)
 	}
 }
 
-// Yield puts arbitrary object into context for subsequent rendering into response
-func Yield(c context.Context, data interface{}) {
+// Yield puts arbitrary data into context for subsequent rendering into response.
+// The first argument of Yield is a HTTP status code.
+func Yield(c context.Context, code int, data interface{}) {
 	dest := c.Value(renderKey).(*renderResult)
 	dest.mu.Lock() // better safe than sorry
 	defer dest.mu.Unlock()
+	dest.code = code
 	dest.data = data
 }

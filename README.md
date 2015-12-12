@@ -210,8 +210,8 @@ further information on provided middlewares.
 Package [render](http://godoc.org/github.com/andviro/noodle/render) provides
 basic middleware for serialization of handler-supplied values, similar to the
 example above. The only difference is that handler must call `render.Yield`
-function to pass its data back to `render.JSON` middleware through context.
-Example usage of render middleware follows:
+function to pass HTTP status code and its data back to `render.JSON` middleware
+through context. Example usage of render middleware follows:
 
 ```go
 import (
@@ -227,7 +227,7 @@ type TestStruct struct {
 
 func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
 	testData := TestStruct{1, "Ohohoho"}
-    render.Yield(c, &testData)
+    render.Yield(c, 201, &testData)
     return nil
 })
 
