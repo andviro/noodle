@@ -21,6 +21,9 @@ environment through handler chains.
   Logger, Recovery etc., all context-aware. 
 * Includes adapter collection that allow integration of third-party
   middlewares without breaking of context and error propagation
+* See also [wok](https://github.com/andviro/wok), a web application router
+  based on [httprouter](https://github.com/julienschmidt/httprouter) that has
+  route groups and supports noodle middleware.
 
 ## Middleware and handlers
 
