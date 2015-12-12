@@ -22,8 +22,7 @@ func TestJSON(t *testing.T) {
 
 	h := noodle.New(render.JSON).Then(
 		func(c context.Context, w http.ResponseWriter, r *http.Request) error {
-			render.Yield(c, 200, &testData)
-			return nil
+			return render.Yield(c, 200, &testData)
 		})
 
 	r, _ := http.NewRequest("GET", "http://localhost/testId", nil)

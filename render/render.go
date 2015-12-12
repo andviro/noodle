@@ -39,10 +39,11 @@ func JSON(next noodle.Handler) noodle.Handler {
 
 // Yield puts arbitrary data into context for subsequent rendering into response.
 // The first argument of Yield is a HTTP status code.
-func Yield(c context.Context, code int, data interface{}) {
+func Yield(c context.Context, code int, data interface{}) error {
 	dest := c.Value(renderKey).(*renderResult)
 	dest.mu.Lock() // better safe than sorry
 	defer dest.mu.Unlock()
 	dest.code = code
 	dest.data = data
+	return nil
 }

@@ -227,8 +227,7 @@ type TestStruct struct {
 
 func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
 	testData := TestStruct{1, "Ohohoho"}
-    render.Yield(c, 201, &testData)
-    return nil
+    return render.Yield(c, 201, &testData)
 })
 
 ...
