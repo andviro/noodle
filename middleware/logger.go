@@ -55,10 +55,11 @@ func Logger(next noodle.Handler) noodle.Handler {
 		lw.headerWritten = false
 		defer writers.Put(lw)
 
+		url := r.URL.String() // further calls may modify request URL
 		start := time.Now()
 		err = next(c, lw, r)
 		end := time.Now()
-		log.Printf("%s %s (%d) from %s [%s] error = %v", r.Method, r.URL.String(), lw.Code(), r.RemoteAddr, end.Sub(start), err)
+		log.Printf("%s %s (%d) from %s [%s] error = %v", r.Method, url, lw.Code(), r.RemoteAddr, end.Sub(start), err)
 		return
 	}
 }
