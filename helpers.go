@@ -19,30 +19,30 @@ func Var(c context.Context, name string) string {
 
 // GET is a convenience wrapper over Wok.Handle
 func (wok *Wok) GET(path string, h noodle.Handler) {
-	wok.Mount("GET", path, h)
+	wok.Handle("GET", path, h)
 }
 
 // POST is a convenience wrapper over Wok.Handle
 func (wok *Wok) POST(path string, h noodle.Handler) {
-	wok.Mount("POST", path, h)
+	wok.Handle("POST", path, h)
 }
 
 // DELETE is a convenience wrapper over Wok.Handle
 func (wok *Wok) DELETE(path string, h noodle.Handler) {
-	wok.Mount("DELETE", path, h)
+	wok.Handle("DELETE", path, h)
 }
 
 // PATCH is a convenience wrapper over Wok.Handle
 func (wok *Wok) PATCH(path string, h noodle.Handler) {
-	wok.Mount("PATCH", path, h)
+	wok.Handle("PATCH", path, h)
 }
 
 // PUT is a convenience wrapper over Wok.Handle
 func (wok *Wok) PUT(path string, h noodle.Handler) {
-	wok.Mount("PUT", path, h)
+	wok.Handle("PUT", path, h)
 }
 
 // OPTIONS is a convenience wrapper over Wok.Handle
 func (wok *Wok) OPTIONS(path string, h noodle.Handler) {
-	wok.Mount("OPTIONS", path, h)
+	wok.Handle("OPTIONS", path, h)
 }

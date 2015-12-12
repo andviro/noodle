@@ -48,9 +48,9 @@ func New(mws ...noodle.Middleware) *Wok {
 	}
 }
 
-// Mount allows to attach noodle.Handler to a route
-func (wok *Wok) Mount(method, path string, h noodle.Handler) {
-	wok.Handle(method, path, wok.convert(wok.chain.Then(h)))
+// Handle allows to attach noodle.Handler to a route
+func (wok *Wok) Handle(method, path string, h noodle.Handler) {
+	wok.Router.Handle(method, path, wok.convert(wok.chain.Then(h)))
 }
 
 // Group starts new route group with common prefix.
