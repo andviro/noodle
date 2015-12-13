@@ -5,7 +5,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/net/context"
 	"net/http"
-	"strings"
+	"path/filepath"
 )
 
 type key int
@@ -13,23 +13,13 @@ type key int
 // Wok is a simple wrapper for httprouter with route groups and native support for noodle.Handler
 type Wok struct {
 	prefix  string
+	parent  *Wok
 	chain   noodle.Chain
 	rootCtx context.Context
 	*httprouter.Router
 }
 
-var methods = []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"}
 var paramKey key = 0
-
-func (wok *Wok) restorePrefix(next noodle.Handler) noodle.Handler {
-	if wok.prefix == "" {
-		return next
-	}
-	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		r.URL.Path = wok.prefix + r.URL.Path
-		return next(ctx, w, r)
-	}
-}
 
 // convert turns noodle.Handler into httprouter.Handle
 func (wok *Wok) convert(h noodle.Handler) httprouter.Handle {
@@ -50,27 +40,22 @@ func New(mws ...noodle.Middleware) *Wok {
 
 // Handle allows to attach noodle.Handler to a route
 func (wok *Wok) Handle(method, path string, h noodle.Handler) {
-	wok.Router.Handle(method, path, wok.convert(wok.chain.Then(h)))
+	h = wok.chain.Then(h)
+	if wok.parent == nil {
+		wok.Router.Handle(method, path, wok.convert(h))
+	} else {
+		wok.parent.Handle(method, filepath.Join(wok.prefix, path), h)
+	}
 }
 
 // Group starts new route group with common prefix.
 // Middleware passed to Group will be used for all routes in it.
 func (wok *Wok) Group(prefix string, mws ...noodle.Middleware) *Wok {
-	if strings.ContainsAny(prefix, ":*") {
-		panic("Group prefix should not have parameters")
-	}
-
-	res := &Wok{
+	return &Wok{
 		prefix:  prefix,
-		Router:  httprouter.New(),
+		parent:  wok,
+		Router:  wok.Router,
+		chain:   noodle.New(mws...),
 		rootCtx: wok.rootCtx,
 	}
-	// prefix needs to be stuffed back into request path to fool middlewares
-	res.chain = noodle.New(res.restorePrefix).Use(wok.chain...).Use(mws...)
-
-	res.prefix = prefix
-	for _, m := range methods {
-		wok.Handler(m, prefix+"/*rest", http.StripPrefix(res.prefix, res))
-	}
-	return res
 }
