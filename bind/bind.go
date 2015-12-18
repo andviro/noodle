@@ -2,6 +2,7 @@ package bind
 
 import (
 	"encoding/json"
+	"github.com/ajg/form"
 	"github.com/andviro/noodle"
 	"golang.org/x/net/context"
 	"io"
@@ -15,16 +16,23 @@ var (
 	bindKey key = 0
 )
 
-type DecoderConstructor interface {
-	NewDecoder(io.Reader) Decoder
-}
+type constructor func(io.Reader) decoder
 
-type Decoder interface {
+type decoder interface {
 	Decode(interface{}) error
 }
 
-// Generic
-func Generic(dc DecoderConstructor) {
+func jsonC(r io.Reader) decoder {
+	return json.NewDecoder(r)
+}
+
+func formC(r io.Reader) decoder {
+	return form.NewDecoder(r)
+}
+
+// generic middleware factory for request binding.
+// Accepts constructor type that receives io.Reader and returns decoder
+func generic(dc constructor) func(interface{}) noodle.Middleware {
 	return func(model interface{}) noodle.Middleware {
 		typeModel := reflect.TypeOf(model)
 		if typeModel.Kind() == reflect.Ptr {
@@ -33,7 +41,7 @@ func Generic(dc DecoderConstructor) {
 		return func(next noodle.Handler) noodle.Handler {
 			return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
 				res := reflect.New(typeModel).Interface()
-				err := dc.NewDecoder(r.Body).Decode(res)
+				err := dc(r.Body).Decode(res)
 				if err != nil {
 					return err
 				}
@@ -45,7 +53,11 @@ func Generic(dc DecoderConstructor) {
 
 // JSON constructs middleware that parses request body according to provided model
 // and injects parsed object into context
-var JSON = Generic(jsonConstructor)
+var JSON = generic(jsonC)
+
+// Form constructs middleware that parses request form according to provided model
+// and injects parsed object into context
+var Form = generic(formC)
 
 // GetData extracts data parsed from upstream Bind operation
 func GetData(c context.Context) interface{} {

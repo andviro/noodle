@@ -2,6 +2,7 @@ package bind_test
 
 import (
 	"bytes"
+	"github.com/ajg/form"
 	"github.com/andviro/noodle"
 	"github.com/andviro/noodle/bind"
 	"golang.org/x/net/context"
@@ -12,8 +13,8 @@ import (
 )
 
 type TestStruct struct {
-	A int    `json:"a"`
-	B string `json:"b"`
+	A int    `json:"a" form:"a"`
+	B string `json:"b" form:"b"`
 }
 
 func bindHandlerFactory(is *is.Is) noodle.Handler {
@@ -24,6 +25,20 @@ func bindHandlerFactory(is *is.Is) noodle.Handler {
 		is.Equal(s.B, "Ololo")
 		return nil
 	}
+}
+
+func TestBindForm(t *testing.T) {
+	is := is.New(t)
+	testForm, _ := form.EncodeToString(TestStruct{1, "Ololo"})
+	buf := bytes.NewBuffer([]byte(testForm))
+	emptyBuf := bytes.NewBuffer([]byte("alskdjasdklj"))
+
+	n := noodle.New(bind.Form(TestStruct{})).Then(bindHandlerFactory(is))
+	r, _ := http.NewRequest("POST", "http://localhost", buf)
+	is.NotErr(n(context.TODO(), httptest.NewRecorder(), r))
+
+	r, _ = http.NewRequest("POST", "http://localhost", emptyBuf)
+	is.Err(n(context.TODO(), httptest.NewRecorder(), r))
 }
 
 func TestBindJSON(t *testing.T) {
@@ -39,7 +54,7 @@ func TestBindJSON(t *testing.T) {
 	is.Err(n(context.TODO(), httptest.NewRecorder(), r))
 }
 
-func TestBindJSONPanicsOnPointer(t *testing.T) {
+func TestBindPanicsOnPointer(t *testing.T) {
 	is := is.New(t)
 	var err interface{}
 
