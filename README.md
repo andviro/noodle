@@ -252,8 +252,8 @@ import (
 )
 
 type TestStruct struct {
-	A int    `json:"a"`
-	B string `json:"b"`
+	A int    `json:"a" form:"a"`
+	B string `json:"b" form:"b"`
 }
 
 func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -267,11 +267,15 @@ func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
 
 n := mw.Default()
 // The following handler will bind request body to TestStruct type
-http.Handle("/", n.Use(bind.JSON(TestStruct{})).Then(index))
+http.Handle("/jsonEndpoint", n.Use(bind.JSON(TestStruct{})).Then(index))
+
+// The following handler will bind post form to TestStruct type
+http.Handle("/postEndpoint", n.Use(bind.Form(TestStruct{})).Then(index))
 ```
 
-Currently only binding of JSON is supported. XML, form data, etc is work in
-progress. PRs are appreciated.
+Currently binding of JSON and web forms through
+[agj/form](https://github.com/ajg/form) library is supported. XML etc is work
+in progress, PRs are appreciated.
 
 ## Compatibility with third-party middleware
 
