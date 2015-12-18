@@ -1,5 +1,8 @@
 language: go
 
 install:
-  - go get
-  - go get -t
+  - go get golang.org/x/net/context
+  - go get github.com/gorilla/mux
+  - go get github.com/ajg/form
+  - go get github.com/julienschmidt/httprouter
+  - go get gopkg.in/tylerb/is.v1
