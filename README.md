@@ -215,7 +215,7 @@ example above. The only difference is that handler must call `render.Yield`
 function to pass HTTP status code and its data back to the render middleware
 through context. Currently supported are `render.JSON` middleware for JSON
 serialization and `render.Template` that uses pre-compiled `html/template`
-`Template` object to render data object into HTML.
+object to render data object into HTML.
 
 ```go
 import (
@@ -246,9 +246,9 @@ http.Handle("/htmlEndpoint", n.Use(render.Template(tpl)).Then(index))
 
 ## Request binding 
 
-Package [bind](http://godoc.org/github.com/andviro/noodle/bind) allows to bind
-request body to supplied model. Handlers retrieve bound objects using
-`bind.GetData` function.
+Package [bind](http://godoc.org/github.com/andviro/noodle/bind) provides
+middleware for loading request body into supplied model. Handlers retrieve
+bound objects using `bind.GetData` function.
 
 ```go
 import (
@@ -272,10 +272,10 @@ func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
 
 n := mw.Default()
 // The following handler will bind request body to TestStruct type
-http.Handle("/jsonEndpoint", n.Use(bind.JSON(TestStruct{})).Then(index))
+http.Handle("/jsonPostEndpoint", n.Use(bind.JSON(TestStruct{})).Then(index))
 
 // The following handler will bind post form to TestStruct type
-http.Handle("/postEndpoint", n.Use(bind.Form(TestStruct{})).Then(index))
+http.Handle("/formPostEndpoint", n.Use(bind.Form(TestStruct{})).Then(index))
 ```
 
 Currently binding of JSON and web forms through
