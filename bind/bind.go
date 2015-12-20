@@ -16,23 +16,25 @@ var (
 	bindKey key = 0
 )
 
-type constructor func(io.Reader) decoder
+// Constructor is a generic function modelled after json.NewDecoder
+type Constructor func(io.Reader) Decoder
 
-type decoder interface {
+// Decoder populates target object with data from request body
+type Decoder interface {
 	Decode(interface{}) error
 }
 
-func jsonC(r io.Reader) decoder {
+func jsonC(r io.Reader) Decoder {
 	return json.NewDecoder(r)
 }
 
-func formC(r io.Reader) decoder {
+func formC(r io.Reader) Decoder {
 	return form.NewDecoder(r)
 }
 
-// generic middleware factory for request binding.
-// Accepts constructor type that receives io.Reader and returns decoder
-func generic(dc constructor) func(interface{}) noodle.Middleware {
+// Generic is a middleware factory for request binding.
+// Accepts Constructor and returns binder for model
+func Generic(dc Constructor) func(interface{}) noodle.Middleware {
 	return func(model interface{}) noodle.Middleware {
 		typeModel := reflect.TypeOf(model)
 		if typeModel.Kind() == reflect.Ptr {
@@ -53,11 +55,11 @@ func generic(dc constructor) func(interface{}) noodle.Middleware {
 
 // JSON constructs middleware that parses request body according to provided model
 // and injects parsed object into context
-var JSON = generic(jsonC)
+var JSON = Generic(jsonC)
 
 // Form constructs middleware that parses request form according to provided model
 // and injects parsed object into context
-var Form = generic(formC)
+var Form = Generic(formC)
 
 // GetData extracts data parsed from upstream Bind operation
 func GetData(c context.Context) interface{} {

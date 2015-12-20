@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/andviro/noodle"
 	"golang.org/x/net/context"
+	"html/template"
 	"io"
 	"net/http"
 	"sync"
@@ -17,12 +18,13 @@ type renderResult struct {
 	data interface{}
 }
 
-// serializerFunc is modelled after template's Execute method
-type serializerFunc func(io.Writer, interface{}) error
+// SerializerFunc is modelled after template's Execute method.
+// Used by Generic middleware factory to create specific rendering middlewares
+type SerializerFunc func(io.Writer, interface{}) error
 
-// generic factory for a middleware that lifts handler result object from context
-// and serializes it into HTTP ResponseWriter. Receives serializer function
-func generic(s serializerFunc) noodle.Middleware {
+// Generic factory for a middleware that lifts handler's data object from context
+// and serializes it into HTTP ResponseWriter. Receives SerializerFunc and content type
+func Generic(s SerializerFunc, contentType string) noodle.Middleware {
 	return func(next noodle.Handler) noodle.Handler {
 		return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
 			var res renderResult
@@ -31,7 +33,7 @@ func generic(s serializerFunc) noodle.Middleware {
 			if err != nil {
 				return err
 			}
-			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Content-Type", contentType)
 
 			res.mu.RLock()
 			defer res.mu.RUnlock()
@@ -44,9 +46,14 @@ func generic(s serializerFunc) noodle.Middleware {
 }
 
 // JSON serializes result object into JSON format
-var JSON = generic(func(w io.Writer, data interface{}) error {
+var JSON = Generic(func(w io.Writer, data interface{}) error {
 	return json.NewEncoder(w).Encode(data)
-})
+}, "application/json")
+
+// Template creates middleware that applies pre-compiled template to handler's data object
+func Template(tpl *template.Template) noodle.Middleware {
+	return Generic(tpl.Execute, "text/html")
+}
 
 // Yield puts arbitrary data into context for subsequent rendering into response.
 // The first argument of Yield is a HTTP status code.
