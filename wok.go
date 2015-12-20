@@ -61,3 +61,8 @@ func (wok *Wok) Group(prefix string, mws ...noodle.Middleware) *Wok {
 		rootCtx: wok.rootCtx,
 	}
 }
+
+// Var returns route variable for context or empty string
+func Var(c context.Context, name string) string {
+	return c.Value(paramKey).(httprouter.Params).ByName(name)
+}

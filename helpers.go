@@ -3,18 +3,12 @@ package wok
 import (
 	"github.com/andviro/noodle"
 	mw "github.com/andviro/noodle/middleware"
-	"github.com/julienschmidt/httprouter"
-	"golang.org/x/net/context"
 )
 
-// Default creates new Wok with Logger, Recovery and LocalStore middleware at the start of middleware chain
+// Default creates new Wok with Logger, Recovery and LocalStore middleware
+// at the start of middleware chain
 func Default(mws ...noodle.Middleware) *Wok {
 	return New(mw.Default(mws...)...)
-}
-
-// Var returns route variable for context or empty string
-func Var(c context.Context, name string) string {
-	return c.Value(paramKey).(httprouter.Params).ByName(name)
 }
 
 // GET is a convenience wrapper over Wok.Handle

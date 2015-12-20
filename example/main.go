@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	mw "github.com/andviro/noodle/middleware"
 	"github.com/andviro/noodle/render"
 	"github.com/andviro/wok"
@@ -11,7 +10,7 @@ import (
 )
 
 func index(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	fmt.Fprint(w, "Index page")
+	// nothing to do here, everything is in the template
 	return nil
 }
 
@@ -49,7 +48,8 @@ func main() {
 	w := wok.Default()
 
 	// Index page
-	w.GET("/")(index)
+	idxTpl := template.Must(template.New("index").Parse("<h1>Hello</h1>"))
+	w.GET("/", render.Template(idxTpl))(index)
 
 	// api is a group of routes with common authentication and result rendering
 	api := w.Group("/api", apiAuth, render.JSON)
