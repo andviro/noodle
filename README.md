@@ -1,7 +1,6 @@
 # Wok
 
-[![Build
-Status](https://travis-ci.org/andviro/wok.svg?branch=master)](https://travis-ci.org/andviro/wok)
+[![Build Status](https://travis-ci.org/andviro/wok.svg?branch=master)](https://travis-ci.org/andviro/wok)
 [![Coverage](http://gocover.io/_badge/github.com/andviro/wok?0)](http://gocover.io/github.com/andviro/wok)
 [![GoDoc](http://godoc.org/github.com/andviro/wok?status.png)](http://godoc.org/github.com/andviro/wok)
 
@@ -10,6 +9,7 @@ A simple and minimalistic (51 LOC in wok.go) web application router based on
 groups, global, per-group and per-route
 [noodle](https://github.com/andviro/noodle) middleware. For a quick start see
 the [sample application](https://github.com/andviro/wok/blob/master/example/main.go).
+License: MIT.
 
 ## Root router object
 
@@ -104,3 +104,8 @@ w := wok.Default()
 // start server
 http.ListenAndServe(":8080", w)
 ```
+
+## License
+
+This code is released under
+[MIT](https://github.com/andviro/wok/blob/master/LICENSE) license.
