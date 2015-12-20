@@ -87,8 +87,7 @@ At any moment `noodle.Chain` can be extended by calling `Use()` method with
 some additional middlewares as arguments. Each `Use()` call creates new
 middleware chain totally independent from parent. The following example extends
 root chain with variables from `gorilla/mux` router. For standalone example of
-`gorilla/mux` usage see [provided sample
-code](https://github.com/andviro/noodle/blob/master/examples/gorilla/main.go)
+`gorilla/mux` usage see [provided sample code](https://github.com/andviro/noodle/blob/master/examples/gorilla/main.go)
 and `adapt/gorilla` subpackage.
 
 ```go
@@ -110,8 +109,8 @@ serves user requests. The resulting handler implements `http.Handler` interface
 providing `ServeHTTP` method. When serving HTTP from `noodle.Handler` default
 empty context is passed to each request. For further flexibility
 `noodle.Handler` can be provided with externally created `context`. This
-advanced usage is outlined in [httprouter adaptor
-example](https://github.com/andviro/noodle/blob/master/examples/httprouter/main.go)
+advanced usage is outlined in
+[httprouter adaptor example](https://github.com/andviro/noodle/blob/master/examples/httprouter/main.go)
 and put to use in `adapt/httprouter` subpackage.
 
 ```go
@@ -213,13 +212,16 @@ further information on provided middlewares.
 Package [render](http://godoc.org/github.com/andviro/noodle/render) provides
 basic middleware for serialization of handler-supplied values, similar to the
 example above. The only difference is that handler must call `render.Yield`
-function to pass HTTP status code and its data back to `render.JSON` middleware
-through context. Example usage of render middleware follows:
+function to pass HTTP status code and its data back to the render middleware
+through context. Currently supported are `render.JSON` middleware for JSON
+serialization and `render.Template` that uses pre-compiled `html/template`
+`Template` object to render data object into HTML.
 
 ```go
 import (
     mw "github.com/andviro/noodle/middleware"
     "github.com/andviro/noodle/render"
+    "html/template"
 )
 
 
@@ -235,8 +237,11 @@ func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
 
 ...
 
-n := mw.Default(render.JSON)
-http.Handle("/", n.Then(index))
+n := mw.Default()
+http.Handle("/jsonEndpoint", n.Use(render.JSON).Then(index))
+
+tpl, _ := template.New().Parse("<h1>Hello {{ .B }}</h1> {{ .A }}")
+http.Handle("/htmlEndpoint", n.Use(render.Template(tpl)).Then(index))
 ```
 
 ## Request binding 
