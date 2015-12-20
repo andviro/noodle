@@ -48,7 +48,7 @@ func testRequest(wok *wok.Wok, method, path string) string {
 func TestHandle(t *testing.T) {
 	is := is.New(t)
 	wk := wok.New(mwFactory("A"))
-	wk.GET("/", handlerFactory("B"))
+	wk.GET("/")(handlerFactory("B"))
 	is.Equal(testRequest(wk, "GET", "/"), "A>[B]")
 }
 
@@ -57,8 +57,8 @@ func TestGroup(t *testing.T) {
 	wk := wok.New(mwFactory("A"))
 	g1 := wk.Group("/g1", mwFactory("G1"))
 	g2 := wk.Group("/g2", mwFactory("G2"))
-	g1.GET("/", noodle.New(mwFactory("G11")).Then(handlerFactory("B")))
-	g2.GET("/", noodle.New(mwFactory("G21")).Then(handlerFactory("C")))
+	g1.GET("/", mwFactory("G11"))(handlerFactory("B"))
+	g2.GET("/", mwFactory("G21"))(handlerFactory("C"))
 
 	is.Equal(testRequest(wk, "GET", "/g1"), "A>G1>G11>[B]")
 	is.Equal(testRequest(wk, "GET", "/g2"), "A>G2>G21>[C]")
@@ -73,7 +73,7 @@ func TestRouterVars(t *testing.T) {
 		}
 	}
 	wk := wok.New(mw)
-	wk.GET("/:varA/:varB", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	wk.GET("/:varA/:varB")(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprintf(w, "[%s][%s][%s]", wok.Var(ctx, "varA"), wok.Var(ctx, "varB"), ctx.Value(0).(string))
 		return nil
 	})
@@ -133,7 +133,7 @@ func ExampleApplication() {
 	w := wok.Default(globalErrorHandler)
 
 	// Handle index page
-	w.GET("/", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	w.GET("/")(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, "Index page")
 		return nil
 	})
@@ -141,11 +141,11 @@ func ExampleApplication() {
 	// api is a group of routes with common authentication, result rendering and error handling
 	api := w.Group("/api", render.JSON, apiErrorHandler, apiAuth)
 	{
-		api.GET("/", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		api.GET("/")(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			res := []int{1, 2, 3, 4, 5}
 			return render.Yield(ctx, 200, res)
 		})
-		api.GET("/:id", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		api.GET("/:id")(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			id := wok.Var(ctx, "id")
 			res := struct {
 				ID string
@@ -157,7 +157,7 @@ func ExampleApplication() {
 	// dash is an example of another separate route group
 	dash := w.Group("/dash", dashboardAuth)
 	{
-		dash.GET("/", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		dash.GET("/")(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			fmt.Fprintf(w, "Hello %s", mw.GetUser(ctx))
 			return nil
 		})

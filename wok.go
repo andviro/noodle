@@ -38,14 +38,16 @@ func New(mws ...noodle.Middleware) *Wok {
 	}
 }
 
-// Handle allows to attach noodle.Handler to a route
-func (wok *Wok) Handle(method, path string, h noodle.Handler) {
-	h = wok.chain.Then(h)
+// Handle allows to attach some noodle Middlewares and a Handle to a route
+func (wok *Wok) Handle(method, path string, mws ...noodle.Middleware) func(noodle.Handler) {
+	chain := wok.chain.Use(mws...)
 	if wok.parent == nil {
-		wok.Router.Handle(method, path, wok.convert(h))
-	} else {
-		wok.parent.Handle(method, filepath.Join(wok.prefix, path), h)
+		return func(h noodle.Handler) {
+			h = chain.Then(h)
+			wok.Router.Handle(method, path, wok.convert(h))
+		}
 	}
+	return wok.parent.Handle(method, filepath.Join(wok.prefix, path), chain...)
 }
 
 // Group starts new route group with common prefix.

@@ -7,8 +7,8 @@ Status](https://travis-ci.org/andviro/wok.svg?branch=master)](https://travis-ci.
 
 A proof of concept web application router based on
 [httprouter](https://github.com/julienschmidt/httprouter). Supports route
-groups and per-group [noodle](https://github.com/andviro/noodle) middleware.
-Sample application:
+groups, global, per-route and per-group
+[noodle](https://github.com/andviro/noodle) middleware. Sample application:
 
 ```go
 package main
@@ -19,8 +19,34 @@ import (
 	"github.com/andviro/noodle/render"
 	"github.com/andviro/wok"
 	"golang.org/x/net/context"
+	"html/template"
 	"net/http"
 )
+
+func index(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	fmt.Fprint(w, "Index page")
+	return nil
+}
+
+func apiIndex(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	res := []int{1, 2, 3, 4, 5}
+	return render.Yield(ctx, 200, res)
+}
+
+func apiDetail(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	id := wok.Var(ctx, "id")
+	res := struct {
+		ID string
+	}{id}
+	return render.Yield(ctx, 201, res)
+}
+
+func dashIndex(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	res := map[string]interface{}{
+		"User": mw.GetUser(ctx),
+	}
+	return render.Yield(ctx, 201, res)
+}
 
 func main() {
 	// apiAuth guards access to api group
@@ -36,37 +62,22 @@ func main() {
 	w := wok.Default()
 
 	// Index page
-	w.GET("/", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		fmt.Fprint(w, "Index page")
-		return nil
-	})
+	w.GET("/")(index)
 
-	// api is a group of routes with common authentication, result rendering and error handling
+	// api is a group of routes with common authentication and result rendering
 	api := w.Group("/api", apiAuth, render.JSON)
 	{
-		api.GET("/", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-			res := []int{1, 2, 3, 4, 5}
-			return render.Yield(ctx, 200, res)
-		})
-		api.GET("/:id", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-			id := wok.Var(ctx, "id")
-			res := struct {
-				ID string
-			}{id}
-			return render.Yield(ctx, 201, res)
-		})
+		api.GET("/")(apiIndex)
+		api.GET("/:id")(apiDetail)
 	}
 
 	// dash is an example of another separate route group
 	dash := w.Group("/dash", dashboardAuth)
 	{
-		dash.GET("/", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-			fmt.Fprintf(w, "Hello %s", mw.GetUser(ctx))
-			return nil
-		})
+		tpl, _ := template.New("dash").Parse("<h1>Hello {{ .User }}</h1>")
+		dash.GET("/", render.Template(tpl))(dashIndex)
 	}
 
 	http.ListenAndServe(":8080", w)
 }
-
 ```

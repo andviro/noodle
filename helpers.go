@@ -18,31 +18,31 @@ func Var(c context.Context, name string) string {
 }
 
 // GET is a convenience wrapper over Wok.Handle
-func (wok *Wok) GET(path string, h noodle.Handler) {
-	wok.Handle("GET", path, h)
+func (wok *Wok) GET(path string, mws ...noodle.Middleware) func(noodle.Handler) {
+	return wok.Handle("GET", path, mws...)
 }
 
 // POST is a convenience wrapper over Wok.Handle
-func (wok *Wok) POST(path string, h noodle.Handler) {
-	wok.Handle("POST", path, h)
+func (wok *Wok) POST(path string, mws ...noodle.Middleware) func(noodle.Handler) {
+	return wok.Handle("POST", path, mws...)
 }
 
 // DELETE is a convenience wrapper over Wok.Handle
-func (wok *Wok) DELETE(path string, h noodle.Handler) {
-	wok.Handle("DELETE", path, h)
+func (wok *Wok) DELETE(path string, mws ...noodle.Middleware) func(noodle.Handler) {
+	return wok.Handle("DELETE", path, mws...)
 }
 
 // PATCH is a convenience wrapper over Wok.Handle
-func (wok *Wok) PATCH(path string, h noodle.Handler) {
-	wok.Handle("PATCH", path, h)
+func (wok *Wok) PATCH(path string, mws ...noodle.Middleware) func(noodle.Handler) {
+	return wok.Handle("PATCH", path, mws...)
 }
 
 // PUT is a convenience wrapper over Wok.Handle
-func (wok *Wok) PUT(path string, h noodle.Handler) {
-	wok.Handle("PUT", path, h)
+func (wok *Wok) PUT(path string, mws ...noodle.Middleware) func(noodle.Handler) {
+	return wok.Handle("PUT", path, mws...)
 }
 
 // OPTIONS is a convenience wrapper over Wok.Handle
-func (wok *Wok) OPTIONS(path string, h noodle.Handler) {
-	wok.Handle("OPTIONS", path, h)
+func (wok *Wok) OPTIONS(path string, mws ...noodle.Middleware) func(noodle.Handler) {
+	return wok.Handle("OPTIONS", path, mws...)
 }
