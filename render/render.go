@@ -19,6 +19,9 @@ type renderResult struct {
 	data interface{}
 }
 
+// htmlJSON is a generic template for outputting JSON data inside a PRE tag
+var htmlJSON = template.Must(template.New("htmlJSON").Parse("<html><body><pre>{{.}}</pre></body></html>"))
+
 // SerializerFunc is modelled after template's Execute method.
 // Used by Generic middleware factory to create specific rendering middlewares
 type SerializerFunc func(io.Writer, interface{}) error
@@ -64,6 +67,38 @@ var TextXML = Generic(func(w io.Writer, data interface{}) error {
 // Template creates middleware that applies pre-compiled template to handler's data object
 func Template(tpl *template.Template) noodle.Middleware {
 	return Generic(tpl.Execute, "text/html")
+}
+
+// ContentType creates renderer middleware that renders response to JSON, XML or HTML template
+// based on Accept header.  If Accept header is not specified, JSON is used as the output format.
+// If nil is passed as template, only XML and JSON are rendered and text/html is output as JSON inside PRE tag.
+func ContentType(tpl *template.Template) noodle.Middleware {
+	var htmlRender noodle.Middleware
+	if tpl == nil {
+		htmlRender = Generic(func(w io.Writer, data interface{}) error {
+			s, err := json.MarshalIndent(data, "", "  ")
+			if err != nil {
+				return err
+			}
+			return htmlJSON.Execute(w, string(s))
+		}, "text/html")
+	} else {
+		htmlRender = Template(tpl)
+	}
+	return func(next noodle.Handler) noodle.Handler {
+		return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
+			switch r.Header.Get("Accept") {
+			case "text/xml":
+				return TextXML(next)(c, w, r)
+			case "application/xml":
+				return XML(next)(c, w, r)
+			case "text/html":
+				return htmlRender(next)(c, w, r)
+			default:
+				return JSON(next)(c, w, r)
+			}
+		}
+	}
 }
 
 // Yield puts arbitrary data into context for subsequent rendering into response.

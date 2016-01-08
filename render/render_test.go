@@ -18,13 +18,18 @@ type TestStruct struct {
 	B string `json:"b"`
 }
 
-func genericRenderTest(mw noodle.Middleware, data interface{}) (w *httptest.ResponseRecorder, err error) {
+type headerMutator func(*http.Request)
+
+func genericRenderTest(mw noodle.Middleware, data interface{}, mutators ...headerMutator) (w *httptest.ResponseRecorder, err error) {
 	h := noodle.New(mw).Then(
 		func(c context.Context, w http.ResponseWriter, r *http.Request) error {
 			return render.Yield(c, 200, data)
 		})
 
 	r, _ := http.NewRequest("GET", "http://localhost/testId", nil)
+	for _, m := range mutators {
+		m(r)
+	}
 	w = httptest.NewRecorder()
 	err = h(context.TODO(), w, r)
 	return
@@ -78,4 +83,83 @@ func TestJSON(t *testing.T) {
 	var res TestStruct
 	is.NotErr(json.Unmarshal(w.Body.Bytes(), &res))
 	is.Equal(res, testData)
+}
+
+func TestContentTypeHTML(t *testing.T) {
+	is := is.New(t)
+	testData := TestStruct{2, "Hehehehe"}
+	testTpl, _ := template.New("index").Parse("<b>{{ .A }}</b><i>{{ .B }}</i>")
+
+	w, err := genericRenderTest(render.ContentType(testTpl), testData, func(r *http.Request) {
+		r.Header.Set("Accept", "text/html")
+	})
+	is.NotErr(err)
+	is.Equal(w.Header().Get("Content-Type"), "text/html")
+	is.Equal(w.Body.String(), "<b>2</b><i>Hehehehe</i>")
+}
+
+func TestContentTypeNil(t *testing.T) {
+	is := is.New(t)
+	testData := TestStruct{2, "Hehehehe"}
+
+	w, err := genericRenderTest(render.ContentType(nil), testData, func(r *http.Request) {
+		r.Header.Set("Accept", "text/html")
+	})
+	is.NotErr(err)
+	is.Equal(w.Header().Get("Content-Type"), "text/html")
+	// XXX: too lazy to test this properly
+}
+
+func TestContentTypeJSON(t *testing.T) {
+	is := is.New(t)
+	testData := TestStruct{3, "Hahahahah"}
+
+	w, err := genericRenderTest(render.ContentType(nil), testData, func(r *http.Request) {
+		r.Header.Set("Accept", "application/json")
+	})
+	is.NotErr(err)
+	is.Equal(w.Header().Get("Content-Type"), "application/json")
+
+	var res TestStruct
+	is.NotErr(json.Unmarshal(w.Body.Bytes(), &res))
+	is.Equal(res, testData)
+}
+
+func TestContentTypeXML(t *testing.T) {
+	is := is.New(t)
+	testData := TestStruct{3, "Hahahahah"}
+
+	w, err := genericRenderTest(render.ContentType(nil), testData, func(r *http.Request) {
+		r.Header.Set("Accept", "application/xml")
+	})
+	is.NotErr(err)
+	is.Equal(w.Header().Get("Content-Type"), "application/xml")
+
+	var res TestStruct
+	is.NotErr(xml.Unmarshal(w.Body.Bytes(), &res))
+	is.Equal(res, testData)
+}
+
+func TestContentTypeParsesAccept(t *testing.T) {
+	is := is.New(t)
+	contentTypes := []struct {
+		Expected string
+		Received string
+	}{
+		{"application/xml", "application/xml"},
+		{"application/json", "application/json"},
+		{"text/xml", "text/xml"},
+		{"text/html", "text/html"},
+		{"", "application/json"},
+	}
+
+	for _, ct := range contentTypes {
+		w, err := genericRenderTest(render.ContentType(nil), nil, func(r *http.Request) {
+			if ct.Expected != "" {
+				r.Header.Set("Accept", ct.Expected)
+			}
+		})
+		is.NotErr(err)
+		is.Equal(w.Header().Get("Content-Type"), ct.Received)
+	}
 }

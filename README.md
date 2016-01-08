@@ -214,8 +214,8 @@ basic middleware for serialization of handler-supplied values, similar to the
 example above. The only difference is that handler must call `render.Yield`
 function to pass HTTP status code and its data back to the render middleware
 through context. Currently supported are `render.JSON` middleware for JSON
-serialization and `render.Template` that uses pre-compiled `html/template`
-object to render data object into HTML.
+serialization, `render.XML` for XML output and `render.Template` that uses
+pre-compiled `html/template` object to render data object into HTML.
 
 ```go
 import (
@@ -242,6 +242,24 @@ http.Handle("/jsonEndpoint", n.Use(render.JSON).Then(index))
 
 tpl, _ := template.New().Parse("<h1>Hello {{ .B }}</h1> {{ .A }}")
 http.Handle("/htmlEndpoint", n.Use(render.Template(tpl)).Then(index))
+```
+
+## Rendering based on Accept header
+
+`render.ContentType` analyzes request's `Accept` header and renders output data
+to JSON, XML or HTML, setting `ContentType` appropriately. If template for HTML
+rendering is `nil`, result is rendered to indented JSON inside HTML `PRE` tag,
+which can be used for endpoint debugging. If `Accept` header is not specified
+or not recognized, the result is rendered to JSON.
+
+```go
+
+tpl, _ := template.Must(template.New().Parse("<h1>Hello {{ .B }}</h1> {{ .A }}"))
+
+// or
+// tpl := nil
+
+http.Handle("/anyContent", n.Use(render.ContentType(tpl)).Then(index))
 ```
 
 ## Request binding 
