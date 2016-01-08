@@ -2,6 +2,7 @@ package render
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"github.com/andviro/noodle"
 	"golang.org/x/net/context"
 	"html/template"
@@ -49,6 +50,16 @@ func Generic(s SerializerFunc, contentType string) noodle.Middleware {
 var JSON = Generic(func(w io.Writer, data interface{}) error {
 	return json.NewEncoder(w).Encode(data)
 }, "application/json")
+
+// XML serializes result object into "application/xml" content type. Use TextXML for "text/xml" output.
+var XML = Generic(func(w io.Writer, data interface{}) error {
+	return xml.NewEncoder(w).Encode(data)
+}, "application/xml")
+
+// TextXML is the same as XML, but with "text/xml" content type
+var TextXML = Generic(func(w io.Writer, data interface{}) error {
+	return xml.NewEncoder(w).Encode(data)
+}, "text/xml")
 
 // Template creates middleware that applies pre-compiled template to handler's data object
 func Template(tpl *template.Template) noodle.Middleware {
