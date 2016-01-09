@@ -21,9 +21,9 @@ environment through handler chains.
   Logger, Recovery etc., all context-aware. 
 * Includes adapter collection that allow integration of third-party
   middlewares without breaking of context and error propagation
-* See also [wok](https://github.com/andviro/wok), a web application router
-  based on [httprouter](https://github.com/julienschmidt/httprouter) that has
-  route groups and supports noodle middleware.
+* Comes with a [minimalistic web application framework](https://github.com/andviro/noodle/tree/master/wok)
+  based on [httprouter](https://github.com/julienschmidt/httprouter) that has route
+  groups and supports global, per-route and per-group noodle middleware.
 
 ## Middleware and handlers
 
@@ -101,6 +101,7 @@ func GorillaVars(next noodle.Handler) noodle.Handler {
 n = n.Use(GorillaVars)
 ```
 
+
 ## Handling HTTP requests
 
 Middleware chain is finalized and converted to `noodle.Handler` with `Then()`
@@ -111,7 +112,7 @@ empty context is passed to each request. For further flexibility
 `noodle.Handler` can be provided with externally created `context`. This
 advanced usage is outlined in
 [httprouter adaptor example](https://github.com/andviro/noodle/blob/master/examples/httprouter/main.go)
-and put to use in `adapt/httprouter` subpackage.
+and put to use in `wok` router .
 
 ```go
 func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -354,12 +355,8 @@ http.Handle("/", n.Then(indexHandler))
 
 ## Convenience adaptors
 
-For compatibility with popular router packages, such as [Gorilla
-mux](https://github.com/gorilla/mux) and
-[httprouter](https://github.com/julienschmidt/httprouter) corresponding
-[middleware](http://godoc.org/github.com/andviro/noodle/adapt/gorilla) and
-[adaptor struct](http://godoc.org/github.com/andviro/noodle/adapt/httprouter)
-are included.
+For compatibility with Gorilla [mux](https://github.com/gorilla/mux)  corresponding
+[middleware](http://godoc.org/github.com/andviro/noodle/adapt/gorilla) is provided.
 
 ## License
 

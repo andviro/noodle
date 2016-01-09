@@ -9,7 +9,6 @@ A simple and minimalistic (51 LOC in wok.go) web application router based on
 groups, global, per-group and per-route
 [noodle](https://github.com/andviro/noodle) middleware. For a quick start see
 the [sample application](https://github.com/andviro/wok/blob/master/example/main.go).
-License: MIT.
 
 ## Root router object
 
@@ -108,4 +107,4 @@ http.ListenAndServe(":8080", w)
 ## License
 
 This code is released under
-[MIT](https://github.com/andviro/wok/blob/master/LICENSE) license.
+[MIT](https://github.com/andviro/noodle/blob/master/LICENSE) license.

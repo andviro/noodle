@@ -1,5 +1,0 @@
-language: go
-
-install:
-  - go get gopkg.in/tylerb/is.v1
-  - go get
