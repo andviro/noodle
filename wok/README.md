@@ -1,14 +1,12 @@
 # Wok
 
-[![Build Status](https://travis-ci.org/andviro/wok.svg?branch=master)](https://travis-ci.org/andviro/wok)
-[![Coverage](http://gocover.io/_badge/github.com/andviro/wok?0)](http://gocover.io/github.com/andviro/wok)
-[![GoDoc](http://godoc.org/github.com/andviro/wok?status.png)](http://godoc.org/github.com/andviro/wok)
+[![GoDoc](http://godoc.org/github.com/andviro/noodle/wok?status.png)](http://godoc.org/github.com/andviro/noodle/wok)
 
 A simple and minimalistic (51 LOC in wok.go) web application router based on
 [httprouter](https://github.com/julienschmidt/httprouter). Supports route
 groups, global, per-group and per-route
 [noodle](https://github.com/andviro/noodle) middleware. For a quick start see
-the [sample application](https://github.com/andviro/wok/blob/master/example/main.go).
+the [sample application](https://github.com/andviro/noodle/blob/master/examples/wok/main.go).
 
 ## Root router object
 
