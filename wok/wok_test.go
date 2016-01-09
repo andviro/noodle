@@ -6,7 +6,7 @@ import (
 	"github.com/andviro/noodle"
 	mw "github.com/andviro/noodle/middleware"
 	"github.com/andviro/noodle/render"
-	"github.com/andviro/wok"
+	"github.com/andviro/noodle/wok"
 	"golang.org/x/net/context"
 	"gopkg.in/tylerb/is.v1"
 	"io/ioutil"
