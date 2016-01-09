@@ -5,8 +5,10 @@
 A simple and minimalistic (51 LOC in wok.go) web application router based on
 [httprouter](https://github.com/julienschmidt/httprouter). Supports route
 groups, global, per-group and per-route
-[noodle](https://github.com/andviro/noodle) middleware. For a quick start see
-the [sample application](https://github.com/andviro/noodle/blob/master/examples/wok/main.go).
+[noodle](https://github.com/andviro/noodle) middleware. Compatible with
+`noodle.Handler` and arbitrary handler interfaces that implement `ServeHTTPC`
+method.
+For a quick start see the [sample application](https://github.com/andviro/noodle/blob/master/examples/wok/main.go).
 
 ## Root router object
 
@@ -30,6 +32,7 @@ func errorHandler(next noodle.Handler) noodle.Handler {
 // error handler will catch all errors from routes
 w := wok.Default(errorHandler)
 ```
+
 
 ## Handling routes
 
@@ -88,6 +91,7 @@ api.GET("/:id")(apiDetail)
 Note that you also can pass route-specific middleware lists to `GET` methods!
 
 
+
 ## Serving HTTP
 
 The `Wok` router object implements `http.Handler` interface and can be directly
@@ -100,6 +104,35 @@ w := wok.Default()
 
 // start server
 http.ListenAndServe(":8080", w)
+```
+
+## Compatibility with third-party libraries
+
+Context-aware HTTP handling is an emerging standard without fixed guidelines.
+Some package authors prefer their handler functions to not return an error
+which is perfectly ok with Wok. To pass some third-party handler into Wok route
+endpoint, use either `HandleC` method that expects an interface implementing
+`ServeHTTPC`, or `HandleFuncC` that needs a function with signature `func(ctx
+context.Context, w http.ResponseWriter, r *http.Request)`.
+
+```go 
+
+func index(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+    // ... do some handling here
+}
+
+type ServerC struct{}
+
+func (s ServerC) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+    // ... implement the handling here
+}
+
+var idxStruct ServerC
+
+// Attach handler function
+w.GET("/funcEndpoint", render.Template(idxTpl)).HandleFuncC(index)
+// Attach handler interface
+w.GET("/handlerEndpoint", render.Template(idxTpl)).HandleC(idxStruct)
 ```
 
 ## License

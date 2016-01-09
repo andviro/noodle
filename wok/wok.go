@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 )
 
-type key int
-
 // Wok is a simple wrapper for httprouter with route groups and native support for noodle.Handler
 type Wok struct {
 	prefix  string
@@ -18,6 +16,10 @@ type Wok struct {
 	rootCtx context.Context
 	*httprouter.Router
 }
+
+type RouteClosure func(noodle.Handler)
+
+type key int
 
 var paramKey key = 0
 
@@ -39,7 +41,7 @@ func New(mws ...noodle.Middleware) *Wok {
 }
 
 // Handle allows to attach some noodle Middlewares and a Handle to a route
-func (wok *Wok) Handle(method, path string, mws ...noodle.Middleware) func(noodle.Handler) {
+func (wok *Wok) Handle(method, path string, mws ...noodle.Middleware) RouteClosure {
 	chain := wok.chain.Use(mws...)
 	if wok.parent == nil {
 		return func(h noodle.Handler) {
