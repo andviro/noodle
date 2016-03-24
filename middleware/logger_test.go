@@ -35,3 +35,23 @@ func TestLogger(t *testing.T) {
 	is.True(strings.Contains(logString, "(400)"))
 	is.True(strings.Contains(logString, "test error"))
 }
+
+func TestLoggerImplementsInterfaces(t *testing.T) {
+	is := is.New(t)
+
+	n := noodle.New(mw.Logger).Then(
+		func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			_, ok := w.(http.Flusher)
+			is.True(ok)
+			_, ok = w.(http.Hijacker)
+			is.True(ok)
+			_, ok = w.(http.CloseNotifier)
+			is.True(ok)
+			return nil
+		},
+	)
+
+	r, _ := http.NewRequest("GET", "http://localhost", nil)
+	err := n(context.TODO(), httptest.NewRecorder(), r)
+	is.NotErr(err)
+}

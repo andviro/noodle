@@ -1,9 +1,11 @@
 package middleware
 
 import (
+	"bufio"
 	"github.com/andviro/noodle"
 	"golang.org/x/net/context"
 	"log"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -37,6 +39,19 @@ func (l *logWriter) Code() int {
 		return 200
 	}
 	return l.code
+}
+
+// provide other typical ResponseWriter methods
+func (l *logWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return l.ResponseWriter.(http.Hijacker).Hijack()
+}
+
+func (l *logWriter) CloseNotify() <-chan bool {
+	return l.ResponseWriter.(http.CloseNotifier).CloseNotify()
+}
+
+func (l *logWriter) Flush() {
+	l.ResponseWriter.(http.Flusher).Flush()
 }
 
 func init() {
