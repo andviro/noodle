@@ -74,7 +74,16 @@ func Logger(next noodle.Handler) noodle.Handler {
 		start := time.Now()
 		err = next(c, lw, r)
 		end := time.Now()
-		log.Printf("%s %s (%d) from %s [%s] error = %v", r.Method, url, lw.Code(), r.RemoteAddr, end.Sub(start), err)
+		var msg string
+		if err != nil {
+			switch t := err.(type) {
+			case RecoverError:
+				msg = t.String()
+			case error:
+				msg = t.Error()
+			}
+		}
+		log.Printf("%s %s (%d) from %s [%s] error = %s", r.Method, url, lw.Code(), r.RemoteAddr, end.Sub(start), msg)
 		return
 	}
 }

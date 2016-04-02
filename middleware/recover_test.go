@@ -16,6 +16,8 @@ func TestRecover(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://localhost", nil)
 	err := n(context.TODO(), httptest.NewRecorder(), r)
 	is.Equal(err.Error(), "panic: whoopsie!")
+	_, ok := err.(mw.RecoverError)
+	is.True(ok)
 }
 
 func panickyHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
