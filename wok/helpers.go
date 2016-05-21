@@ -27,8 +27,7 @@ func (f RouteClosure) HandleFuncC(h func(ctx context.Context, w http.ResponseWri
 	})
 }
 
-// Default creates new Wok with Logger, Recovery and LocalStore middleware
-// at the start of middleware chain
+// Default creates new Wok with the default Noodle middleware chain
 func Default(mws ...noodle.Middleware) *Wok {
 	return New(mw.Default(mws...)...)
 }

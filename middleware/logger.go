@@ -74,6 +74,10 @@ func Logger(next noodle.Handler) noodle.Handler {
 		start := time.Now()
 		err = next(c, lw, r)
 		end := time.Now()
+		remoteAddr := GetRealIP(c) // try to get client address from middleware
+		if remoteAddr == "" {
+			remoteAddr = r.RemoteAddr
+		}
 		var msg string
 		if err != nil {
 			switch t := err.(type) {
@@ -83,7 +87,7 @@ func Logger(next noodle.Handler) noodle.Handler {
 				msg = t.Error()
 			}
 		}
-		log.Printf("%s %s (%d) from %s [%s] error = %s", r.Method, url, lw.Code(), r.RemoteAddr, end.Sub(start), msg)
+		log.Printf("%s %s (%d) from %s [%s] error = %s", r.Method, url, lw.Code(), remoteAddr, end.Sub(start), msg)
 		return
 	}
 }
