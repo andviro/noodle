@@ -27,7 +27,11 @@ func mwFactory(tag string) noodle.Middleware {
 
 func handlerFactory(tag string) noodle.Handler {
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		fmt.Fprintf(w, "[%s]", tag)
+		if val, ok := ctx.Value(tag).(string); ok {
+			fmt.Fprintf(w, "[%s]", val)
+		} else {
+			fmt.Fprintf(w, "[%s]", tag)
+		}
 		return nil
 	}
 }
@@ -62,6 +66,23 @@ func TestGroup(t *testing.T) {
 
 	is.Equal(testRequest(wk, "GET", "/g1"), "A>G1>G11>[B]")
 	is.Equal(testRequest(wk, "GET", "/g2"), "A>G2>G21>[C]")
+}
+
+func TestSetContext(t *testing.T) {
+	is := is.New(t)
+	ctx := context.WithValue(context.TODO(), "B", "*B*")
+
+	wk := wok.New(mwFactory("A"))
+	g1 := wk.Group("/g1", mwFactory("G1"))
+	g2 := wk.Group("/g2", mwFactory("G2"))
+	g1.GET("/", mwFactory("G11"))(handlerFactory("B"))
+	g2.GET("/", mwFactory("G21"))(handlerFactory("C"))
+
+	wk.SetContext(ctx)
+	is.Equal(testRequest(wk, "GET", "/g1"), "A>G1>G11>[*B*]")
+
+	g2.SetContext(context.WithValue(ctx, "C", "*C*"))
+	is.Equal(testRequest(wk, "GET", "/g2"), "A>G2>G21>[*C*]")
 }
 
 func TestRouterVars(t *testing.T) {
