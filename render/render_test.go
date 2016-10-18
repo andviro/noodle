@@ -42,7 +42,7 @@ func TestTemplate(t *testing.T) {
 
 	w, err := genericRenderTest(render.Template(testTpl), testData)
 	is.NotErr(err)
-	is.Equal(w.Header().Get("Content-Type"), "text/html")
+	is.Equal(w.Header().Get("Content-Type"), "text/html;charset=utf-8")
 	is.Equal(w.Body.String(), "<b>2</b><i>Hehehehe</i>")
 }
 
@@ -52,7 +52,7 @@ func TestXML(t *testing.T) {
 
 	w, err := genericRenderTest(render.XML, testData)
 	is.NotErr(err)
-	is.Equal(w.Header().Get("Content-Type"), "application/xml")
+	is.Equal(w.Header().Get("Content-Type"), "application/xml;charset=utf-8")
 
 	var res TestStruct
 	is.NotErr(xml.Unmarshal(w.Body.Bytes(), &res))
@@ -65,7 +65,7 @@ func TestTextXML(t *testing.T) {
 
 	w, err := genericRenderTest(render.TextXML, testData)
 	is.NotErr(err)
-	is.Equal(w.Header().Get("Content-Type"), "text/xml")
+	is.Equal(w.Header().Get("Content-Type"), "text/xml;charset=utf-8")
 
 	var res TestStruct
 	is.NotErr(xml.Unmarshal(w.Body.Bytes(), &res))
@@ -78,7 +78,7 @@ func TestJSON(t *testing.T) {
 
 	w, err := genericRenderTest(render.JSON, testData)
 	is.NotErr(err)
-	is.Equal(w.Header().Get("Content-Type"), "application/json")
+	is.Equal(w.Header().Get("Content-Type"), "application/json;charset=utf-8")
 
 	var res TestStruct
 	is.NotErr(json.Unmarshal(w.Body.Bytes(), &res))
@@ -94,7 +94,7 @@ func TestContentTypeHTML(t *testing.T) {
 		r.Header.Set("Accept", "text/html")
 	})
 	is.NotErr(err)
-	is.Equal(w.Header().Get("Content-Type"), "text/html")
+	is.Equal(w.Header().Get("Content-Type"), "text/html;charset=utf-8")
 	is.Equal(w.Body.String(), "<b>2</b><i>Hehehehe</i>")
 }
 
@@ -106,7 +106,7 @@ func TestContentTypeNil(t *testing.T) {
 		r.Header.Set("Accept", "text/html")
 	})
 	is.NotErr(err)
-	is.Equal(w.Header().Get("Content-Type"), "text/html")
+	is.Equal(w.Header().Get("Content-Type"), "text/html;charset=utf-8")
 	// XXX: too lazy to test this properly
 }
 
@@ -118,7 +118,7 @@ func TestContentTypeJSON(t *testing.T) {
 		r.Header.Set("Accept", "application/json")
 	})
 	is.NotErr(err)
-	is.Equal(w.Header().Get("Content-Type"), "application/json")
+	is.Equal(w.Header().Get("Content-Type"), "application/json;charset=utf-8")
 
 	var res TestStruct
 	is.NotErr(json.Unmarshal(w.Body.Bytes(), &res))
@@ -133,7 +133,7 @@ func TestContentTypeXML(t *testing.T) {
 		r.Header.Set("Accept", "application/xml")
 	})
 	is.NotErr(err)
-	is.Equal(w.Header().Get("Content-Type"), "application/xml")
+	is.Equal(w.Header().Get("Content-Type"), "application/xml;charset=utf-8")
 
 	var res TestStruct
 	is.NotErr(xml.Unmarshal(w.Body.Bytes(), &res))
@@ -146,11 +146,11 @@ func TestContentTypeParsesAccept(t *testing.T) {
 		Expected string
 		Received string
 	}{
-		{"application/xml", "application/xml"},
-		{"application/json", "application/json"},
-		{"text/xml", "text/xml"},
-		{"text/html", "text/html"},
-		{"", "application/json"},
+		{"application/xml", "application/xml;charset=utf-8"},
+		{"application/json", "application/json;charset=utf-8"},
+		{"text/xml", "text/xml;charset=utf-8"},
+		{"text/html", "text/html;charset=utf-8"},
+		{"", "application/json;charset=utf-8"},
 	}
 
 	for _, ct := range contentTypes {
