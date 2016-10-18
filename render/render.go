@@ -52,21 +52,21 @@ func Generic(s SerializerFunc, contentType string) noodle.Middleware {
 // JSON serializes result object into JSON format
 var JSON = Generic(func(w io.Writer, data interface{}) error {
 	return json.NewEncoder(w).Encode(data)
-}, "application/json")
+}, "application/json;charset=utf-8")
 
 // XML serializes result object into "application/xml" content type. Use TextXML for "text/xml" output.
 var XML = Generic(func(w io.Writer, data interface{}) error {
 	return xml.NewEncoder(w).Encode(data)
-}, "application/xml")
+}, "application/xml;charset=utf-8")
 
 // TextXML is the same as XML, but with "text/xml" content type
 var TextXML = Generic(func(w io.Writer, data interface{}) error {
 	return xml.NewEncoder(w).Encode(data)
-}, "text/xml")
+}, "text/xml;charset=utf-8")
 
 // Template creates middleware that applies pre-compiled template to handler's data object
 func Template(tpl *template.Template) noodle.Middleware {
-	return Generic(tpl.Execute, "text/html")
+	return Generic(tpl.Execute, "text/html;charset=utf-8")
 }
 
 // ContentType creates renderer middleware that renders response to JSON, XML or HTML template
@@ -81,7 +81,7 @@ func ContentType(tpl *template.Template) noodle.Middleware {
 				return err
 			}
 			return htmlJSON.Execute(w, string(s))
-		}, "text/html")
+		}, "text/html;charset=utf-8")
 	} else {
 		htmlRender = Template(tpl)
 	}
