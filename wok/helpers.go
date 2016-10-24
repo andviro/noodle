@@ -1,9 +1,9 @@
 package wok
 
 import (
+	"context"
 	"github.com/andviro/noodle"
 	mw "github.com/andviro/noodle/middleware"
-	"golang.org/x/net/context"
 	"net/http"
 )
 

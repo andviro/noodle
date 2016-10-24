@@ -1,9 +1,9 @@
 package wok
 
 import (
+	"context"
 	"github.com/andviro/noodle"
 	"github.com/julienschmidt/httprouter"
-	"golang.org/x/net/context"
 	"net/http"
 	"path/filepath"
 )

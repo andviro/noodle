@@ -1,11 +1,11 @@
 package adapt_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/andviro/noodle"
 	"github.com/andviro/noodle/adapt"
-	"golang.org/x/net/context"
 	"gopkg.in/tylerb/is.v1"
 	"net/http"
 	"net/http/httptest"

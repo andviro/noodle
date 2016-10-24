@@ -1,10 +1,10 @@
 package render
 
 import (
+	"context"
 	"encoding/json"
 	"encoding/xml"
 	"github.com/andviro/noodle"
-	"golang.org/x/net/context"
 	"html/template"
 	"io"
 	"net/http"

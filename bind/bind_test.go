@@ -2,10 +2,10 @@ package bind_test
 
 import (
 	"bytes"
+	"context"
 	"github.com/ajg/form"
 	"github.com/andviro/noodle"
 	"github.com/andviro/noodle/bind"
-	"golang.org/x/net/context"
 	"gopkg.in/tylerb/is.v1"
 	"net/http"
 	"net/http/httptest"

@@ -1,10 +1,10 @@
 package bind
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/ajg/form"
 	"github.com/andviro/noodle"
-	"golang.org/x/net/context"
 	"io"
 	"net/http"
 	"reflect"

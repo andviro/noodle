@@ -1,9 +1,9 @@
 package noodle_test
 
 import (
+	"context"
 	"fmt"
 	"github.com/andviro/noodle"
-	"golang.org/x/net/context"
 	"gopkg.in/tylerb/is.v1"
 	"net/http"
 	"net/http/httptest"

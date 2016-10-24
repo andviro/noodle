@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"bufio"
+	"context"
 	"github.com/andviro/noodle"
-	"golang.org/x/net/context"
 	"log"
 	"net"
 	"net/http"

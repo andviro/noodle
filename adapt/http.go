@@ -1,8 +1,8 @@
 package adapt
 
 import (
+	"context"
 	"github.com/andviro/noodle"
-	"golang.org/x/net/context"
 	"net/http"
 )
 

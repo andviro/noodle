@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	mw "github.com/andviro/noodle/middleware"
 	"github.com/andviro/noodle/render"
 	"github.com/andviro/noodle/wok"
-	"golang.org/x/net/context"
 	"html/template"
 	"net/http"
 )

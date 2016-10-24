@@ -1,9 +1,9 @@
 package middleware
 
 import (
+	"context"
 	"errors"
 	"github.com/andviro/noodle"
-	"golang.org/x/net/context"
 	"net/http"
 	"net/url"
 )

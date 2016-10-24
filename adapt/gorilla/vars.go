@@ -1,9 +1,9 @@
 package gorilla
 
 import (
+	"context"
 	"github.com/andviro/noodle"
 	"github.com/gorilla/mux"
-	"golang.org/x/net/context"
 	"net/http"
 )
 

@@ -1,11 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/andviro/noodle/adapt/gorilla"
 	mw "github.com/andviro/noodle/middleware"
 	"github.com/gorilla/mux"
-	"golang.org/x/net/context"
 	"log"
 	"net/http"
 )

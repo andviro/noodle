@@ -1,9 +1,9 @@
 package middleware_test
 
 import (
+	"context"
 	"github.com/andviro/noodle"
 	mw "github.com/andviro/noodle/middleware"
-	"golang.org/x/net/context"
 	"gopkg.in/tylerb/is.v1"
 	"net/http"
 	"testing"

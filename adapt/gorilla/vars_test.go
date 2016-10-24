@@ -1,10 +1,10 @@
 package gorilla_test
 
 import (
+	"context"
 	"github.com/andviro/noodle"
 	"github.com/andviro/noodle/adapt/gorilla"
 	"github.com/gorilla/mux"
-	"golang.org/x/net/context"
 	"gopkg.in/tylerb/is.v1"
 	"net/http"
 	"net/http/httptest"

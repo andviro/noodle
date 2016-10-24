@@ -1,11 +1,11 @@
 package render_test
 
 import (
+	"context"
 	"encoding/json"
 	"encoding/xml"
 	"github.com/andviro/noodle"
 	"github.com/andviro/noodle/render"
-	"golang.org/x/net/context"
 	"gopkg.in/tylerb/is.v1"
 	"html/template"
 	"net/http"
