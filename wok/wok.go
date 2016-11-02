@@ -5,7 +5,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/net/context"
 	"net/http"
-	"path/filepath"
 )
 
 // Wok is a simple wrapper for httprouter with route groups and native support for noodle.Handler
@@ -66,7 +65,7 @@ func (wok *Wok) Handle(method, path string, mws ...noodle.Middleware) RouteClosu
 	chain := noodle.New(mws...)
 	for router := wok; router != nil; router = router.parent {
 		chain = router.chain.Use(chain...)
-		path = filepath.Join(router.prefix, path)
+		path = UrlJoin(router.prefix, path)
 	}
 	return func(h noodle.Handler) {
 		h = chain.Then(h)

@@ -5,6 +5,7 @@ import (
 	mw "github.com/andviro/noodle/middleware"
 	"golang.org/x/net/context"
 	"net/http"
+	"strings"
 )
 
 type HandlerC interface {
@@ -25,6 +26,19 @@ func (f RouteClosure) HandleFuncC(h func(ctx context.Context, w http.ResponseWri
 		h(ctx, w, r)
 		return nil
 	})
+}
+
+func UrlJoin(paths ...string) (res string) {
+	rawRes := strings.Join(paths, "/")
+	for _, s := range strings.Split(rawRes, "/") {
+		if s != "" {
+			res += "/" + s
+		}
+	}
+	if res == "" {
+		return "/"
+	}
+	return
 }
 
 // Default creates new Wok with the default Noodle middleware chain
