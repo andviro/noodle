@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"bufio"
-	"context"
 	"github.com/andviro/noodle"
 	"log"
 	"net"
@@ -63,7 +62,7 @@ func init() {
 // Logger is a middleware that logs requests, along with
 // request URI, HTTP status code, handler return value and request timing
 func Logger(next noodle.Handler) noodle.Handler {
-	return func(c context.Context, w http.ResponseWriter, r *http.Request) (err error) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		lw := writers.Get().(*logWriter)
 		lw.ResponseWriter = w
 		lw.code = 0
@@ -72,22 +71,13 @@ func Logger(next noodle.Handler) noodle.Handler {
 
 		url := r.URL.String() // further calls may modify request URL
 		start := time.Now()
-		err = next(c, lw, r)
+		next(lw, r)
 		end := time.Now()
-		remoteAddr := GetRealIP(c) // try to get client address from middleware
+		remoteAddr := GetRealIP(r) // try to get client address from middleware
 		if remoteAddr == "" {
 			remoteAddr = r.RemoteAddr
 		}
-		var msg string
-		if err != nil {
-			switch t := err.(type) {
-			case RecoverError:
-				msg = t.String()
-			case error:
-				msg = t.Error()
-			}
-		}
-		log.Printf("%s %s (%d) from %s [%s] error = %s", r.Method, url, lw.Code(), remoteAddr, end.Sub(start), msg)
+		log.Printf("%s %s (%d) from %s [%s]", r.Method, url, lw.Code(), remoteAddr, end.Sub(start))
 		return
 	}
 }

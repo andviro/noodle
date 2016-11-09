@@ -1,7 +1,6 @@
 package middleware_test
 
 import (
-	"context"
 	"github.com/andviro/noodle"
 	mw "github.com/andviro/noodle/middleware"
 	"gopkg.in/tylerb/is.v1"
@@ -14,23 +13,20 @@ func TestHttpAuth(t *testing.T) {
 	is := is.New(t)
 	n := noodle.New(mw.HTTPAuth("test", func(u, p string) bool {
 		return p == "testPassword"
-	})).Then(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		user := mw.GetUser(ctx)
+	})).Then(func(w http.ResponseWriter, r *http.Request) {
+		user := mw.GetUser(r)
 		is.Equal(user, "testUser")
-		return nil
 	})
 
 	r, _ := http.NewRequest("GET", "http://localhost", nil)
 	w := httptest.NewRecorder()
-	err := n(context.TODO(), w, r)
-	is.Err(err)
-	is.Equal(err, mw.UnauthorizedRequest)
+	n(w, r)
 	is.Equal(w.Code, http.StatusUnauthorized)
 	is.Equal(w.Header().Get("WWW-Authenticate"), "Basic realm=test")
 
 	r.SetBasicAuth("testUser", "wrongPassword")
-	is.Err(n(context.TODO(), w, r))
+	n(w, r)
 
 	r.SetBasicAuth("testUser", "testPassword")
-	is.NotErr(n(context.TODO(), w, r))
+	n(w, r)
 }

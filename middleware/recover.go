@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"fmt"
 	"github.com/andviro/noodle"
 	"net/http"
@@ -24,13 +23,12 @@ func (r RecoverError) String() string {
 // Recover is a basic middleware that catches panics and converts them into
 // errors
 func Recover(next noodle.Handler) noodle.Handler {
-	return func(c context.Context, w http.ResponseWriter, r *http.Request) (err error) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if e := recover(); e != nil {
-				err = RecoverError{e, debug.Stack()}
+				_ = RecoverError{e, debug.Stack()}
 			}
 		}()
-		err = next(c, w, r)
-		return
+		next(w, r)
 	}
 }

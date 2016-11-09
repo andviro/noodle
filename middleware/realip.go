@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"github.com/andviro/noodle"
 	"net/http"
 	"strings"
@@ -30,13 +29,13 @@ func clientIP(r *http.Request) string {
 
 // RealIP is a middleware that injects client IP parsed from request headers into context
 func RealIP(next noodle.Handler) noodle.Handler {
-	return func(c context.Context, w http.ResponseWriter, r *http.Request) (err error) {
-		return next(context.WithValue(c, realIPKey, clientIP(r)), w, r)
+	return func(w http.ResponseWriter, r *http.Request) {
+		next(w, noodle.Set(r, realIPKey, clientIP(r)))
 	}
 }
 
 // GetRealIP extracts real client IP from handler context
-func GetRealIP(c context.Context) string {
-	res, _ := c.Value(realIPKey).(string)
+func GetRealIP(r *http.Request) string {
+	res, _ := noodle.Get(r, realIPKey).(string)
 	return res
 }

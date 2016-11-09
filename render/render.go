@@ -1,7 +1,6 @@
 package render
 
 import (
-	"context"
 	"encoding/json"
 	"encoding/xml"
 	"github.com/andviro/noodle"
@@ -30,13 +29,10 @@ type SerializerFunc func(io.Writer, interface{}) error
 // and serializes it into HTTP ResponseWriter. Receives SerializerFunc and content type
 func Generic(s SerializerFunc, contentType string) noodle.Middleware {
 	return func(next noodle.Handler) noodle.Handler {
-		return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
+		return func(w http.ResponseWriter, r *http.Request) {
 			var res renderResult
 
-			err := next(context.WithValue(c, renderKey, &res), w, r)
-			if err != nil {
-				return err
-			}
+			next(w, noodle.Set(r, renderKey, &res))
 			w.Header().Set("Content-Type", contentType)
 
 			res.mu.RLock()
@@ -44,7 +40,7 @@ func Generic(s SerializerFunc, contentType string) noodle.Middleware {
 			if res.code != 0 {
 				w.WriteHeader(res.code)
 			}
-			return s(w, res.data)
+			s(w, res.data)
 		}
 	}
 }
@@ -86,16 +82,16 @@ func ContentType(tpl *template.Template) noodle.Middleware {
 		htmlRender = Template(tpl)
 	}
 	return func(next noodle.Handler) noodle.Handler {
-		return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
+		return func(w http.ResponseWriter, r *http.Request) {
 			switch r.Header.Get("Accept") {
 			case "text/xml":
-				return TextXML(next)(c, w, r)
+				TextXML(next)(w, r)
 			case "application/xml":
-				return XML(next)(c, w, r)
+				XML(next)(w, r)
 			case "text/html":
-				return htmlRender(next)(c, w, r)
+				htmlRender(next)(w, r)
 			default:
-				return JSON(next)(c, w, r)
+				JSON(next)(w, r)
 			}
 		}
 	}
@@ -103,11 +99,10 @@ func ContentType(tpl *template.Template) noodle.Middleware {
 
 // Yield puts arbitrary data into context for subsequent rendering into response.
 // The first argument of Yield is a HTTP status code.
-func Yield(c context.Context, code int, data interface{}) error {
-	dest := c.Value(renderKey).(*renderResult)
+func Yield(r *http.Request, code int, data interface{}) {
+	dest := noodle.Get(r, renderKey).(*renderResult)
 	dest.mu.Lock() // better safe than sorry
 	defer dest.mu.Unlock()
 	dest.code = code
 	dest.data = data
-	return nil
 }

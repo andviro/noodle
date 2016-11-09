@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/andviro/noodle/adapt/gorilla"
 	mw "github.com/andviro/noodle/middleware"
@@ -10,15 +9,13 @@ import (
 	"net/http"
 )
 
-func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
+func index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "index")
-	return nil
 }
 
-func products(c context.Context, w http.ResponseWriter, r *http.Request) error {
-	vars := gorilla.GetVars(c)
+func products(w http.ResponseWriter, r *http.Request) {
+	vars := gorilla.GetVars(r)
 	fmt.Fprintf(w, "products: %s", vars["id"])
-	return nil
 }
 
 func main() {

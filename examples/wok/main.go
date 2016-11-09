@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	mw "github.com/andviro/noodle/middleware"
 	"github.com/andviro/noodle/render"
 	"github.com/andviro/noodle/wok"
@@ -9,29 +8,28 @@ import (
 	"net/http"
 )
 
-func index(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func index(w http.ResponseWriter, r *http.Request) {
 	// nothing to do here, everything is in the template
-	return nil
 }
 
-func apiIndex(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func apiIndex(w http.ResponseWriter, r *http.Request) {
 	res := []int{1, 2, 3, 4, 5}
-	return render.Yield(ctx, 200, res)
+	render.Yield(r, 200, res)
 }
 
-func apiDetail(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	id := wok.Var(ctx, "id")
+func apiDetail(w http.ResponseWriter, r *http.Request) {
+	id := wok.Var(r, "id")
 	res := struct {
 		ID string
 	}{id}
-	return render.Yield(ctx, 201, res)
+	render.Yield(r, 201, res)
 }
 
-func dashIndex(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func dashIndex(w http.ResponseWriter, r *http.Request) {
 	res := map[string]interface{}{
-		"User": mw.GetUser(ctx),
+		"User": mw.GetUser(r),
 	}
-	return render.Yield(ctx, 201, res)
+	render.Yield(r, 201, res)
 }
 
 func main() {

@@ -1,7 +1,6 @@
 package middleware_test
 
 import (
-	"context"
 	"github.com/andviro/noodle"
 	mw "github.com/andviro/noodle/middleware"
 	"gopkg.in/tylerb/is.v1"
@@ -13,12 +12,11 @@ import (
 func TestStore(t *testing.T) {
 	is := is.New(t)
 	n := noodle.New(mw.LocalStore).Then(
-		func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-			s := mw.GetStore(ctx)
+		func(w http.ResponseWriter, r *http.Request) {
+			s := mw.GetStore(r)
 			is.NotNil(s)
-			return nil
 		},
 	)
 	r, _ := http.NewRequest("GET", "http://localhost", nil)
-	_ = n(context.TODO(), httptest.NewRecorder(), r)
+	n(httptest.NewRecorder(), r)
 }

@@ -1,7 +1,6 @@
 package bind
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/ajg/form"
 	"github.com/andviro/noodle"
@@ -41,13 +40,13 @@ func Generic(dc Constructor) func(interface{}) noodle.Middleware {
 			panic("Bind to pointer is not allowed")
 		}
 		return func(next noodle.Handler) noodle.Handler {
-			return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
+			return func(w http.ResponseWriter, r *http.Request) {
 				res := reflect.New(typeModel).Interface()
 				err := dc(r.Body).Decode(res)
 				if err != nil {
-					return err
+					return
 				}
-				return next(context.WithValue(c, bindKey, res), w, r)
+				next(w, noodle.Set(r, bindKey, res))
 			}
 		}
 	}
@@ -62,6 +61,6 @@ var JSON = Generic(jsonC)
 var Form = Generic(formC)
 
 // GetData extracts data parsed from upstream Bind operation
-func GetData(c context.Context) interface{} {
-	return c.Value(bindKey)
+func GetData(r *http.Request) interface{} {
+	return noodle.Get(r, bindKey)
 }
