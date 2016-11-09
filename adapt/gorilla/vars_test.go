@@ -1,7 +1,6 @@
 package gorilla_test
 
 import (
-	"context"
 	"github.com/andviro/noodle"
 	"github.com/andviro/noodle/adapt/gorilla"
 	"github.com/gorilla/mux"
@@ -14,8 +13,8 @@ import (
 var testKey int = 0
 
 func noodleMW(next noodle.Handler) noodle.Handler {
-	return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
-		return next(context.WithValue(c, testKey, "testValue"), w, r)
+	return func(w http.ResponseWriter, r *http.Request) {
+		next(w, noodle.Set(r, testKey, "testValue"))
 	}
 }
 
@@ -24,10 +23,9 @@ func TestChain(t *testing.T) {
 	site := noodle.New(gorilla.Vars, noodleMW)
 
 	router := mux.NewRouter()
-	router.Handle("/{id}", site.Then(func(c context.Context, w http.ResponseWriter, r *http.Request) error {
-		is.Equal(gorilla.GetVars(c)["id"], "testId")
-		is.Equal(c.Value(testKey).(string), "testValue")
-		return nil
+	router.Handle("/{id}", site.Then(func(w http.ResponseWriter, r *http.Request) {
+		is.Equal(gorilla.GetVars(r)["id"], "testId")
+		is.Equal(noodle.Get(r, testKey).(string), "testValue")
 	}))
 
 	r, _ := http.NewRequest("GET", "http://localhost/testId", nil)

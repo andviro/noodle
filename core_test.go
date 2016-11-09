@@ -1,7 +1,6 @@
 package noodle_test
 
 import (
-	"context"
 	"fmt"
 	"github.com/andviro/noodle"
 	"gopkg.in/tylerb/is.v1"
@@ -22,21 +21,19 @@ func mwFactory(name string) noodle.Middleware {
 	return func(next noodle.Handler) noodle.Handler {
 		varName := "Var" + name
 		varValue := name + "value"
-		return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
-			withVars := context.WithValue(c, varName, varValue)
+		return func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "%s>", name)
-			return next(withVars, w, r)
+			next(w, noodle.Set(r, varName, varValue))
 		}
 	}
 }
 
 func handlerFactory(name string, keys ...string) noodle.Handler {
-	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%s ", name)
 		for _, key := range keys {
-			fmt.Fprintf(w, "[%s=%v]", key, ctx.Value(key))
+			fmt.Fprintf(w, "[%s=%v]", key, noodle.Get(r, key))
 		}
-		return nil
 	}
 }
 
@@ -76,9 +73,8 @@ func TestUseSeparates(t *testing.T) {
 func TestThen(t *testing.T) {
 	is := is.New(t)
 
-	h := noodle.New().Then(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	h := noodle.New().Then(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Abracadabra")
-		return nil
 	})
 	is.Equal("Abracadabra", RunHTTP(h))
 }

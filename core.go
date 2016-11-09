@@ -5,14 +5,10 @@ import (
 	"net/http"
 )
 
-// Handler provides context-aware http.Handler with error return value for
-// enhanced chaining
-type Handler func(context.Context, http.ResponseWriter, *http.Request) error
+type Handler func(w http.ResponseWriter, r *http.Request)
 
-// ServeHTTP applies Handler to request's own context, satisfying
-// http.Handler interface
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	_ = h(r.Context(), w, r)
+	h(w, r)
 }
 
 // Middleware behaves like standard closure middleware pattern, only with
@@ -25,6 +21,14 @@ type Chain []Middleware
 // New creates new middleware Chain and initalizes it with its parameters
 func New(mws ...Middleware) Chain {
 	return mws
+}
+
+func Set(r *http.Request, key, value interface{}) *http.Request {
+	return r.WithContext(context.WithValue(r.Context(), key, value))
+}
+
+func Get(r *http.Request, key interface{}) interface{} {
+	return r.Context().Value(key)
 }
 
 // Use appends its parameters to middleware chain. Returns new separate
