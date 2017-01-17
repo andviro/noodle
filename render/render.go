@@ -51,7 +51,9 @@ func Generic(s SerializerFunc, contentType string) noodle.Middleware {
 
 // JSON serializes result object into JSON format
 var JSON = Generic(func(w io.Writer, data interface{}) error {
-	return json.NewEncoder(w).Encode(data)
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(data)
 }, "application/json;charset=utf-8")
 
 // XML serializes result object into "application/xml" content type. Use TextXML for "text/xml" output.
