@@ -1,9 +1,24 @@
 package wok
 
 import (
+	"strings"
+
 	"github.com/andviro/noodle"
 	mw "github.com/andviro/noodle/middleware"
 )
+
+func UrlJoin(paths ...string) (res string) {
+	rawRes := strings.Join(paths, "/")
+	for _, s := range strings.Split(rawRes, "/") {
+		if s != "" {
+			res += "/" + s
+		}
+	}
+	if res == "" {
+		return "/"
+	}
+	return
+}
 
 // Default creates new Wok with the default Noodle middleware chain
 func Default(mws ...noodle.Middleware) *Wok {
