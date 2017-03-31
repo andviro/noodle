@@ -10,7 +10,7 @@ import (
 // and function for username and password verification. Resulting middleware injects
 // username into request context if authentication successful.
 func HTTPAuth(realm string, authFunc func(username, password string) bool) noodle.Middleware {
-	return func(next noodle.Handler) noodle.Handler {
+	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			username, password, ok := r.BasicAuth()
 			if !ok || !authFunc(username, password) {

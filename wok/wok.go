@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// Wok is a simple wrapper for httprouter with route groups and native support for noodle.Handler
+// Wok is a simple wrapper for httprouter with route groups and native support for http.HandlerFunc
 type Wok struct {
 	prefix string
 	parent *Wok
@@ -15,7 +15,8 @@ type Wok struct {
 	*httprouter.Router
 }
 
-type RouteClosure func(noodle.Handler)
+// RouteClosure is a convenience type that allows setting route handlers by calling the function
+type RouteClosure func(http.HandlerFunc)
 
 type key int
 
@@ -45,9 +46,9 @@ func (wok *Wok) Handle(method, path string, mws ...noodle.Middleware) RouteClosu
 	chain := noodle.New(mws...)
 	for router := wok; router != nil; router = router.parent {
 		chain = router.chain.Use(chain...)
-		path = UrlJoin(router.prefix, path)
+		path = URLJoin(router.prefix, path)
 	}
-	return func(h noodle.Handler) {
+	return func(h http.HandlerFunc) {
 		h = chain.Then(h)
 		wok.Router.Handle(method, path, wok.convert(h))
 	}

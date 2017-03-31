@@ -28,7 +28,7 @@ func clientIP(r *http.Request) string {
 }
 
 // RealIP is a middleware that injects client IP parsed from request headers into context
-func RealIP(next noodle.Handler) noodle.Handler {
+func RealIP(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		next(w, noodle.Set(r, realIPKey, clientIP(r)))
 	}

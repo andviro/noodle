@@ -5,15 +5,9 @@ import (
 	"net/http"
 )
 
-type Handler func(w http.ResponseWriter, r *http.Request)
-
-func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h(w, r)
-}
-
 // Middleware behaves like standard closure middleware pattern, only with
 // context-aware handler type
-type Middleware func(Handler) Handler
+type Middleware func(http.HandlerFunc) http.HandlerFunc
 
 // Chain composes middlewares into a single context-aware handler
 type Chain []Middleware
@@ -23,10 +17,12 @@ func New(mws ...Middleware) Chain {
 	return mws
 }
 
+// Set replaces request's context with a copy in which the value associated with key is val
 func Set(r *http.Request, key, value interface{}) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), key, value))
 }
 
+// Get calls Value() method on request's context and returns the result
 func Get(r *http.Request, key interface{}) interface{} {
 	return r.Context().Value(key)
 }
@@ -40,8 +36,8 @@ func (c Chain) Use(mws ...Middleware) Chain {
 	return res
 }
 
-// Then finalizes middleware Chain converting it to context-aware Handler
-func (c Chain) Then(final Handler) Handler {
+// Then finalizes middleware Chain converting it to context-aware http.HandlerFunc
+func (c Chain) Then(final http.HandlerFunc) http.HandlerFunc {
 	for i := len(c) - 1; i >= 0; i-- {
 		final = c[i](final)
 	}

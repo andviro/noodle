@@ -7,7 +7,8 @@ import (
 	mw "github.com/andviro/noodle/middleware"
 )
 
-func UrlJoin(paths ...string) (res string) {
+// URLJoin joins components of a network path
+func URLJoin(paths ...string) (res string) {
 	rawRes := strings.Join(paths, "/")
 	for _, s := range strings.Split(rawRes, "/") {
 		if s != "" {

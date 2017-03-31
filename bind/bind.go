@@ -39,7 +39,7 @@ func Generic(dc Constructor) func(interface{}) noodle.Middleware {
 		if typeModel.Kind() == reflect.Ptr {
 			panic("Bind to pointer is not allowed")
 		}
-		return func(next noodle.Handler) noodle.Handler {
+		return func(next http.HandlerFunc) http.HandlerFunc {
 			return func(w http.ResponseWriter, r *http.Request) {
 				res := reflect.New(typeModel).Interface()
 				err := dc(r.Body).Decode(res)

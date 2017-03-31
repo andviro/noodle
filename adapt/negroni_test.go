@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func noodleMW(next noodle.Handler) noodle.Handler {
+func noodleMW(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		next(w, noodle.Set(r, "testKey", "testValue"))
 	}

@@ -16,7 +16,7 @@ type TestStruct struct {
 	B string `json:"b" form:"b"`
 }
 
-func bindHandlerFactory(is *is.Is) noodle.Handler {
+func bindHandlerFactory(is *is.Is) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s, ok := bind.GetData(r).(*TestStruct)
 		is.True(ok)

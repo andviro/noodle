@@ -11,7 +11,7 @@ type key int
 var varKey key = 0
 
 // Vars injects Gorilla mux route variables into context
-func Vars(next noodle.Handler) noodle.Handler {
+func Vars(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		next(w, noodle.Set(r, varKey, mux.Vars(r)))
 	}

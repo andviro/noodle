@@ -2,11 +2,11 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/andviro/noodle"
 	"net/http"
 	"runtime/debug"
 )
 
+// RecoverError contains the original error value and a stack trace
 type RecoverError struct {
 	Value      interface{}
 	StackTrace []byte
@@ -22,7 +22,7 @@ func (r RecoverError) String() string {
 
 // Recover is a basic middleware that catches panics and converts them into
 // errors
-func Recover(next noodle.Handler) noodle.Handler {
+func Recover(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if e := recover(); e != nil {

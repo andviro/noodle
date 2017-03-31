@@ -4,6 +4,7 @@ import (
 	"sync"
 )
 
+// KeyError is returned when a corresponding key is missing in store
 type KeyError struct {
 	Key string
 }

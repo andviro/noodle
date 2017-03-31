@@ -18,7 +18,7 @@ func RunHTTP(h http.Handler) string {
 }
 
 func mwFactory(name string) noodle.Middleware {
-	return func(next noodle.Handler) noodle.Handler {
+	return func(next http.HandlerFunc) http.HandlerFunc {
 		varName := "Var" + name
 		varValue := name + "value"
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +28,7 @@ func mwFactory(name string) noodle.Middleware {
 	}
 }
 
-func handlerFactory(name string, keys ...string) noodle.Handler {
+func handlerFactory(name string, keys ...string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%s ", name)
 		for _, key := range keys {

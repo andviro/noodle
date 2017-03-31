@@ -28,7 +28,7 @@ type SerializerFunc func(io.Writer, interface{}) error
 // Generic factory for a middleware that lifts handler's data object from context
 // and serializes it into HTTP ResponseWriter. Receives SerializerFunc and content type
 func Generic(s SerializerFunc, contentType string) noodle.Middleware {
-	return func(next noodle.Handler) noodle.Handler {
+	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			var res renderResult
 
@@ -83,7 +83,7 @@ func ContentType(tpl *template.Template) noodle.Middleware {
 	} else {
 		htmlRender = Template(tpl)
 	}
-	return func(next noodle.Handler) noodle.Handler {
+	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			switch r.Header.Get("Accept") {
 			case "text/xml":

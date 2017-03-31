@@ -16,7 +16,7 @@ import (
 )
 
 func mwFactory(tag string) noodle.Middleware {
-	return func(next noodle.Handler) noodle.Handler {
+	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "%s>", tag)
 			next(w, r)
@@ -24,7 +24,7 @@ func mwFactory(tag string) noodle.Middleware {
 	}
 }
 
-func handlerFactory(tag string) noodle.Handler {
+func handlerFactory(tag string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if val, ok := noodle.Get(r, tag).(string); ok {
 			fmt.Fprintf(w, "[%s]", val)
@@ -68,7 +68,7 @@ func TestGroup(t *testing.T) {
 
 func TestRouterVars(t *testing.T) {
 	is := is.New(t)
-	mw := func(next noodle.Handler) noodle.Handler {
+	mw := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, "MW>")
 			next(w, noodle.Set(r, 0, "testValue"))
@@ -84,7 +84,7 @@ func TestRouterVars(t *testing.T) {
 func ExampleApplication() {
 	// globalErrorHandler receives all errors from all handlers
 	// and tries to return meaningful HTTP status and message
-	globalErrorHandler := func(next noodle.Handler) noodle.Handler {
+	globalErrorHandler := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			next(w, r)
 			//switch err {
@@ -102,7 +102,7 @@ func ExampleApplication() {
 	}
 
 	// apiErrorHandler is a specific error catcher that renders its messages into JSON
-	apiErrorHandler := func(next noodle.Handler) noodle.Handler {
+	apiErrorHandler := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			next(w, r)
 			//switch err {
