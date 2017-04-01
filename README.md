@@ -240,7 +240,7 @@ http.Handle("/", n.Then(index))
 For convenience, initial `noodle.Chain` with logging, recovery and
 request-local store can be created with `middleware.Default()` constructor.
 
-Refer to package [documentation](https://gopkg.in/andviro/noodle.v2/middleware) for
+Refer to package [documentation](https://godoc.org/gopkg.in/andviro/noodle.v2/middleware) for
 further information on provided middlewares.
 
 ## Rendering of handler results
