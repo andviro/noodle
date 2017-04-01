@@ -8,16 +8,22 @@ import (
 	"net/http"
 )
 
-func index(w http.ResponseWriter, r *http.Request) {
-	// nothing to do here, everything is in the template
+// API is a simple service that provides some HTTP handler funcs
+type API struct{}
+
+// Auth callback for HTTPAuth middleware
+func (*API) Auth(user, pass string) bool {
+	return pass == "Secret"
 }
 
-func apiIndex(w http.ResponseWriter, r *http.Request) {
+// Index handler for API
+func (*API) Index(w http.ResponseWriter, r *http.Request) {
 	res := []int{1, 2, 3, 4, 5}
 	render.Yield(r, 200, res)
 }
 
-func apiDetail(w http.ResponseWriter, r *http.Request) {
+// Detail on some id passed in URL
+func (*API) Detail(w http.ResponseWriter, r *http.Request) {
 	id := wok.Var(r, "id")
 	res := struct {
 		ID string
@@ -25,43 +31,48 @@ func apiDetail(w http.ResponseWriter, r *http.Request) {
 	render.Yield(r, 201, res)
 }
 
-func dashIndex(w http.ResponseWriter, r *http.Request) {
+// DashBoard is another service
+type DashBoard struct{}
+
+// Auth callback for HTTPAuth middleware
+func (*DashBoard) Auth(user, pass string) bool {
+	return pass == "Password"
+}
+
+// Index page
+func (*DashBoard) Index(w http.ResponseWriter, r *http.Request) {
 	res := map[string]interface{}{
 		"User": mw.GetUser(r),
 	}
 	render.Yield(r, 201, res)
 }
 
-func main() {
-	// apiAuth guards access to api group
-	apiAuth := mw.HTTPAuth("API", func(user, pass string) bool {
-		return pass == "Secret"
-	})
-	// dashboardAuth guards access to dashboard group
-	dashboardAuth := mw.HTTPAuth("Dashboard", func(user, pass string) bool {
-		return pass == "Password"
-	})
+// Index is a generic HTTP handler function, it relies on template rendering and does nothing
+func Index(w http.ResponseWriter, r *http.Request) {}
 
+var (
+	// Load and parse templates
+	indexTpl     = template.Must(template.New("index").Parse("<h1>Hello</h1>"))
+	dashboardTpl = template.Must(template.New("dash").Parse("<h1>Hello {{ .User }}</h1>"))
+)
+
+func main() {
 	// set up root router with Logger, Recovery and LocalStorage middleware
 	w := wok.Default()
 
 	// Index page
-	idxTpl := template.Must(template.New("index").Parse("<h1>Hello</h1>"))
-	w.GET("/", render.Template(idxTpl))(index)
+	w.GET("/", render.Template(indexTpl))(Index)
 
-	// api is a group of routes with common authentication and result rendering
-	api := w.Group("/api", apiAuth, render.JSON)
-	{
-		api.GET("/")(apiIndex)
-		api.GET("/:id")(apiDetail)
-	}
+	// API route group
+	api := new(API)
+	apiGrp := w.Group("/api", mw.HTTPAuth("API", api.Auth), render.JSON)
+	apiGrp.GET("/")(api.Index)
+	apiGrp.GET("/:id")(api.Detail)
 
-	// dash is an example of another separate route group
-	dash := w.Group("/dash", dashboardAuth)
-	{
-		tpl, _ := template.New("dash").Parse("<h1>Hello {{ .User }}</h1>")
-		dash.GET("/", render.Template(tpl))(dashIndex)
-	}
+	// Dashboard route group
+	dash := new(DashBoard)
+	dashGrp := w.Group("/dash", mw.HTTPAuth("Dashboard", dash.Auth))
+	dashGrp.GET("/", render.Template(dashboardTpl))(dash.Index)
 
 	http.ListenAndServe(":8080", w)
 }
