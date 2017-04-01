@@ -1,36 +1,23 @@
 # Wok
 
-[![GoDoc](http://godoc.org/github.com/andviro/noodle/wok?status.png)](http://godoc.org/github.com/andviro/noodle/wok)
+[![GoDoc](http://godoc.org/gopkg.in/andviro/noodle.v2/wok?status.png)](http://godoc.org/gopkg.in/andviro/noodle.v2/wok)
 
 A simple and minimalistic (51 LOC in wok.go) web application router based on
 [httprouter](https://github.com/julienschmidt/httprouter). Supports route
 groups, global, per-group and per-route
-[noodle](https://github.com/andviro/noodle) middleware. Compatible with
-`noodle.Handler` and arbitrary handler interfaces that implement `ServeHTTPC`
-method.
-For a quick start see the [sample application](https://github.com/andviro/noodle/blob/master/examples/wok/main.go).
+[noodle](https://gopkg.in/andviro/noodle.v2) middleware. Compatible `http.HandlerFunc`.
+For a quick start see the [sample application](https://github.com/andviro/noodle/blob/v2/examples/wok/main.go).
 
 ## Root router object
 
 Wok router is created by `wok.Default()` and `wok.New()` constructors that
 accept arbitrary list of noodle middlewares. Note that the `Default`
 constructor preloads standard logger, recovery and local storage middlewares
-that come with [noodle middleware](https://github.com/andviro/noodle/tree/master/middleware)
+that come with [noodle middleware](https://github.com/andviro/noodle/tree/v2/middleware)
 package. Resulting middleware chain will be shared among all routes.
 
 ```go
-func errorHandler(next noodle.Handler) noodle.Handler {
-    return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
-        err := next(c, w, r)
-        if err != nil {
-            // do something with it
-        }
-        return err // pass error to logger middleware
-    }
-}
-
-// error handler will catch all errors from routes
-w := wok.Default(errorHandler)
+w := wok.Default()
 ```
 
 
@@ -43,9 +30,9 @@ return a closure that accept a single `noodle.Handler` parameter.
 
 ```go
 
-import "github.com/andviro/noodle/render"
+import "gopkg.in/andviro/noodle.v2/render"
 
-func index(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func index(w http.ResponseWriter, r *http.Request) {
 	// nothing to do here, everything is in the template
 	return nil
 }
@@ -65,10 +52,9 @@ parameter syntax reference. To get the value of a route parameter use `wok.Var`
 function:
 
 ```go
-func userDetail(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-    id := wok.Var(ctx, "id")
+func userDetail(w http.ResponseWriter, r *http.Request) {
+    id := wok.Var(r, "id")
     // ... do something with the id
-	return nil
 }
 ```
 
@@ -104,35 +90,6 @@ w := wok.Default()
 
 // start server
 http.ListenAndServe(":8080", w)
-```
-
-## Compatibility with third-party libraries
-
-Context-aware HTTP handling is an emerging standard without fixed guidelines.
-Some package authors prefer their handler functions to not return an error
-which is perfectly ok with Wok. To pass some third-party handler into Wok route
-endpoint, use either `HandleC` method that expects an interface implementing
-`ServeHTTPC`, or `HandleFuncC` that needs a function with signature `func(ctx
-context.Context, w http.ResponseWriter, r *http.Request)`.
-
-```go 
-
-func index(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-    // ... do some handling here
-}
-
-type ServerC struct{}
-
-func (s ServerC) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-    // ... implement the handling here
-}
-
-var idxStruct ServerC
-
-// Attach handler function
-w.GET("/funcEndpoint", render.Template(idxTpl)).HandleFuncC(index)
-// Attach handler interface
-w.GET("/handlerEndpoint", render.Template(idxTpl)).HandleC(idxStruct)
 ```
 
 ## License
