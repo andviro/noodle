@@ -359,7 +359,7 @@ http.Handle("/", n.Then(indexHandler))
 ## Convenience adaptors
 
 For compatibility with Gorilla [mux](https://github.com/gorilla/mux)  corresponding
-[middleware](http://godoc.org/github.com/andviro/noodle/adapt/gorilla) is provided.
+[middleware](http://godoc.org/gopkg.in/andviro/noodle.v2/adapt/gorilla) is provided.
 
 ## License
 
