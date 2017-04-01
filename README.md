@@ -1,35 +1,50 @@
 # Noodle
 
-[![Build Status](https://travis-ci.org/andviro/noodle.svg?branch=master)](https://travis-ci.org/andviro/noodle) 
-[![Coverage](http://gocover.io/_badge/github.com/andviro/noodle?0)](http://gocover.io/github.com/andviro/noodle)  
-[![GoDoc](http://godoc.org/github.com/andviro/noodle?status.png)](http://godoc.org/github.com/andviro/noodle)
+[![Build
+Status](https://travis-ci.org/andviro/noodle.svg?branch=master)](https://travis-ci.org/andviro/noodle)
+[![Coverage](http://gocover.io/_badge/gopkg.in/andviro/noodle.v2?0)](http://gocover.io/gopkg.in/andviro/noodle.v2)
+[![GoDoc](http://godoc.org/gopkg.in/andviro/noodle.v2?status.png)](http://godoc.org/gopkg.in/andviro/noodle.v2)
 
-Noodle is a tiny and (almost) unopinionated Golang middleware stack. It
-borrows its ideas from [Stack](https://github.com/alexedwards/stack.git) 
-package, but relies on Golang net 
-[contexts](http://godoc.org/golang.org/x/net/context) for threading request 
-environment through handler chains.
+Noodle is a tiny and (almost) unopinionated Golang middleware stack. It borrows its ideas from
+[Stack](https://github.com/alexedwards/stack.git) package, but emphasises on usage of the
+[contexts](http://golang.org/context) for threading request environment through
+handler chains.
 
 ## Highlights
 
-- Simple and minimalistic: <30 LOC in core package
-- Strictly adheres to guidelines of [context](http://godoc.org/golang.org/x/net/context) package
-- Noodle Handlers are context-aware and return error for easier error handling
-- Finalized Noodle Handlers implement http.Handler interface, and easy to use 
-  with routing library of choice
+* Simple and minimalistic: <30 LOC in core package
+* Strictly adheres to guidelines of the [context](http://golang.org/context) package
+* Does not introduce new handler type, relies on Go 1.7+ `http.Request` Context support
+* Finalized Noodle Middleware chains are simply `http.HandlerFunc`
 * Batteries included: contains collection of essential middlewares such as
-  Logger, Recovery etc., all context-aware. 
-* Includes adapter collection that allow integration of third-party
-  middlewares without breaking of context and error propagation
-* Comes with a [minimalistic web application framework](https://github.com/andviro/noodle/tree/master/wok)
+  Logger, Recovery etc.
+* Includes handler adapter collection that allow integration of third-party
+  middlewares
+* Comes with a [minimalistic web application framework](https://github.com/andviro/noodle/tree/v1.8/wok)
   based on [httprouter](https://github.com/julienschmidt/httprouter) that has route
   groups and supports global, per-route and per-group noodle middleware.
 
-## Middleware and handlers
+## How to use
 
-`noodle.Middleware` is a generic `func(Handler) Handler` bidirectional 
-middleware that accepts and returns `noodle.Handler`. Following is an example 
-of HTTP basic auth middleware that stores user login in request `context`.
+### Installation
+
+```
+go get gopkg.in/andviro/noodle.v2
+```
+
+### Sample application
+
+```go
+
+```
+
+## Using the package
+
+### Writing your own middleware
+
+`noodle.Middleware` is a generic decorator-style middleare that accepts and returns
+`http.HandlerFunc`. Following is an example of HTTP basic auth middleware that stores user login in
+request `context`.
 
 ```go
 
@@ -39,38 +54,28 @@ func HTTPAuth(authFunc func(username, password string) bool) noodle.Middleware
 {
     // The middleware function verifies user credentials and aborts chain 
     // execution if `authFunc` returns `false`
-    return func(next noodle.Handler) noodle.Handler {
-        return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
+    return func(next http.HandlerFunc) http.HandlerFunc {
+        return func(w http.ResponseWriter, r *http.Request) {
             username, password, ok := r.BasicAuth()
             if !ok || !authFunc(username, password) {
                 w.Header().Set("WWW-Authenticate", "Basic realm=Restricted")
                 w.WriteHeader(http.StatusUnauthorized)
-                // Provide error for logging middleware then abort chain
-                return fmt.Errorf("Unauthorized request")
+                // Send HTTP error code and abort the execution of middleware chain
+                http.Error(w, "Unauthorized access", 401)
+                return
             }
-            // Inject user name into request context
-            userContext := context.WithValue(c, "User", username)
-            return next(userContext, w, r)
+            // Inject user name into request context and continue the execution
+            next(w, noodle.Set(r, "User", username))
         }
     }
 }
 ```
 
-Note that similar [HTTP Basic Auth middleware](https://godoc.org/github.com/andviro/noodle/middleware#HTTPAuth) is included in `middleware` subpackage discussed below.
+Note that similar [HTTP Basic Auth
+middleware](https://godoc.org/gopkg.in/andviro/noodle.v2/middleware#HTTPAuth) is included in
+`middleware` subpackage discussed below.
 
-`noodle.Handler` provides context-aware `http.Handler` with `error` return 
-value for enhanced chaining. Assuming that some middleware stored user login in 
-request context, the following handler outputs personalized greeting:
-
-```go
-func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
-    user := c.Value("User").(string)
-    fmt.Fprintf(w, "Hello %s", user)
-    return nil
-}
-```
-
-## Building noodle chains
+### Building the noodle chains
 
 Middleware chains are created with `noodle.New()`. Optionally middewares can be 
 passed to this function to initalize chain.
@@ -86,15 +91,14 @@ n := noodle.New(basicAuth)
 At any moment `noodle.Chain` can be extended by calling `Use()` method with
 some additional middlewares as arguments. Each `Use()` call creates new
 middleware chain totally independent from parent. The following example extends
-root chain with variables from `gorilla/mux` router. For standalone example of
-`gorilla/mux` usage see [provided sample code](https://github.com/andviro/noodle/blob/master/examples/gorilla/main.go)
+root chain with variables from `gorilla/mux` router. For standalone example of `gorilla/mux` usage
+see [provided sample code](https://github.com/andviro/noodle/blob/go1.8/examples/gorilla/main.go)
 and `adapt/gorilla` subpackage.
 
 ```go
-func GorillaVars(next noodle.Handler) noodle.Handler {
-    return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
-        withVars := context.WithValue(c, "Vars", mux.Vars(r))
-        return next(withVars, w, r)
+func GorillaVars(next http.HandlerFunc) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) error {
+        return next(w, noodle.WithValue(r, "Vars", mux.Vars(r))
     }
 }
 
@@ -104,20 +108,12 @@ n = n.Use(GorillaVars)
 
 ## Handling HTTP requests
 
-Middleware chain is finalized and converted to `noodle.Handler` with `Then()`
-method. Its first parameter is an application handler that consumes context and
-serves user requests. The resulting handler implements `http.Handler` interface
-providing `ServeHTTP` method. When serving HTTP from `noodle.Handler` default
-empty context is passed to each request. For further flexibility
-`noodle.Handler` can be provided with externally created `context`. This
-advanced usage is outlined in
-[httprouter adaptor example](https://github.com/andviro/noodle/blob/master/examples/httprouter/main.go)
-and put to use in `wok` router .
+Middleware chain is finalized and converted to `http.HandlerFunc` with `Then()` method. Its first
+parameter is a `http.HandlerFunc` and the resulting handler 
 
-```go
-func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
+```go 
+func index(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintln(w, "index")
-    return nil
 }
 
 ...
@@ -127,9 +123,8 @@ http.Handle("/", n.Then(index))
 
 ## Baked-in middlewares
 
-Package `noodle` comes with a collection of essential middlewares organized
-into the `middleware` package. Import "github.com/andviro/noodle/middleware" to
-get access to following:
+Package `noodle` comes with a collection of essential middlewares organized into the `middleware`
+package. Import `gopkg.in.com/andviro/noodle.v2/middleware` to get access to the following:
 
 * HTTP Basic Auth middleware
 * Logger
@@ -173,17 +168,10 @@ handler execution to render output in JSON format:
 
 ```go
 
-func RenderJSON(next noodle.Handler) noodle.Nandler {
-    return func(c context.Context, w http.ResponseWriter, r *http.Request) error {
-        if err := next(c, w, r); err != nil {
-            return err
-        }
-        // Expect some "data" value in local store
-        data := middleware.GetStore(c).MustGet("data")
-        json.NewEncoder(w).Encode(data)
-        return nil
-    }
-}
+func RenderJSON(next http.HandlerFunc) noodle.Nandler { return func(c context.Context, w http.ResponseWriter, r
+*http.Request) error { if err := next(c, w, r); err != nil { return err } // Expect some "data"
+value in local store data := middleware.GetStore(c).MustGet("data") json.NewEncoder(w).Encode(data)
+return nil } }
 
 func index(c context.Context, w http.ResponseWriter, r *http.Request) error {
     var res struct {
