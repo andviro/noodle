@@ -21,7 +21,7 @@ handler chains.
 * Includes handler adapter collection that allow integration of third-party
   middlewares
 * Comes with a [minimalistic web application
-  framework](https://github.com/andviro/noodle/tree/v1.8/wok) based on
+  framework](https://github.com/andviro/noodle/tree/v2/wok) based on
   [httprouter](https://github.com/julienschmidt/httprouter) that has route groups and supports
   global, per-route and per-group noodle middleware.
 
