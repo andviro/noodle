@@ -3,7 +3,7 @@ package bind
 import (
 	"encoding/json"
 	"github.com/ajg/form"
-	"github.com/andviro/noodle"
+	"gopkg.in/andviro/noodle.v2"
 	"io"
 	"net/http"
 	"reflect"
@@ -46,7 +46,7 @@ func Generic(dc Constructor) func(interface{}) noodle.Middleware {
 				if err != nil {
 					return
 				}
-				next(w, noodle.Set(r, bindKey, res))
+				next(w, noodle.WithValue(r, bindKey, res))
 			}
 		}
 	}
@@ -62,5 +62,5 @@ var Form = Generic(formC)
 
 // GetData extracts data parsed from upstream Bind operation
 func GetData(r *http.Request) interface{} {
-	return noodle.Get(r, bindKey)
+	return noodle.Value(r, bindKey)
 }

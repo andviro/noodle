@@ -3,8 +3,8 @@ package bind_test
 import (
 	"bytes"
 	"github.com/ajg/form"
-	"github.com/andviro/noodle"
-	"github.com/andviro/noodle/bind"
+	"gopkg.in/andviro/noodle.v2"
+	"gopkg.in/andviro/noodle.v2/bind"
 	"gopkg.in/tylerb/is.v1"
 	"net/http"
 	"net/http/httptest"

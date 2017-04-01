@@ -3,10 +3,10 @@ package wok_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/andviro/noodle"
-	mw "github.com/andviro/noodle/middleware"
-	"github.com/andviro/noodle/render"
-	"github.com/andviro/noodle/wok"
+	"gopkg.in/andviro/noodle.v2"
+	mw "gopkg.in/andviro/noodle.v2/middleware"
+	"gopkg.in/andviro/noodle.v2/render"
+	"gopkg.in/andviro/noodle.v2/wok"
 	"gopkg.in/tylerb/is.v1"
 	"io/ioutil"
 	"net/http"
@@ -26,7 +26,7 @@ func mwFactory(tag string) noodle.Middleware {
 
 func handlerFactory(tag string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if val, ok := noodle.Get(r, tag).(string); ok {
+		if val, ok := noodle.Value(r, tag).(string); ok {
 			fmt.Fprintf(w, "[%s]", val)
 		} else {
 			fmt.Fprintf(w, "[%s]", tag)
@@ -71,12 +71,12 @@ func TestRouterVars(t *testing.T) {
 	mw := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, "MW>")
-			next(w, noodle.Set(r, 0, "testValue"))
+			next(w, noodle.WithValue(r, 0, "testValue"))
 		}
 	}
 	wk := wok.New(mw)
 	wk.GET("/:varA/:varB")(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "[%s][%s][%s]", wok.Var(r, "varA"), wok.Var(r, "varB"), noodle.Get(r, 0).(string))
+		fmt.Fprintf(w, "[%s][%s][%s]", wok.Var(r, "varA"), wok.Var(r, "varB"), noodle.Value(r, 0).(string))
 	})
 	is.Equal(testRequest(wk, "GET", "/1/2"), "MW>[1][2][testValue]")
 }

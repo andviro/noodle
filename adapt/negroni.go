@@ -1,7 +1,7 @@
 package adapt
 
 import (
-	"github.com/andviro/noodle"
+	"gopkg.in/andviro/noodle.v2"
 	"net/http"
 )
 

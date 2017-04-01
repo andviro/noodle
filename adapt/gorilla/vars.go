@@ -1,7 +1,7 @@
 package gorilla
 
 import (
-	"github.com/andviro/noodle"
+	"gopkg.in/andviro/noodle.v2"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -13,12 +13,12 @@ var varKey key = 0
 // Vars injects Gorilla mux route variables into context
 func Vars(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		next(w, noodle.Set(r, varKey, mux.Vars(r)))
+		next(w, noodle.WithValue(r, varKey, mux.Vars(r)))
 	}
 }
 
 // GetVars extracts route variables from context
 func GetVars(r *http.Request) map[string]string {
-	res, _ := noodle.Get(r, varKey).(map[string]string)
+	res, _ := noodle.Value(r, varKey).(map[string]string)
 	return res
 }

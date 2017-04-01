@@ -3,7 +3,7 @@ package render
 import (
 	"encoding/json"
 	"encoding/xml"
-	"github.com/andviro/noodle"
+	"gopkg.in/andviro/noodle.v2"
 	"html/template"
 	"io"
 	"net/http"
@@ -32,7 +32,7 @@ func Generic(s SerializerFunc, contentType string) noodle.Middleware {
 		return func(w http.ResponseWriter, r *http.Request) {
 			var res renderResult
 
-			next(w, noodle.Set(r, renderKey, &res))
+			next(w, noodle.WithValue(r, renderKey, &res))
 			w.Header().Set("Content-Type", contentType)
 
 			res.mu.RLock()
@@ -102,7 +102,7 @@ func ContentType(tpl *template.Template) noodle.Middleware {
 // Yield puts arbitrary data into context for subsequent rendering into response.
 // The first argument of Yield is a HTTP status code.
 func Yield(r *http.Request, code int, data interface{}) {
-	dest := noodle.Get(r, renderKey).(*renderResult)
+	dest := noodle.Value(r, renderKey).(*renderResult)
 	dest.mu.Lock() // better safe than sorry
 	defer dest.mu.Unlock()
 	dest.code = code

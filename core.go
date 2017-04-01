@@ -17,13 +17,13 @@ func New(mws ...Middleware) Chain {
 	return mws
 }
 
-// Set replaces request's context with a copy in which the value associated with key is val
-func Set(r *http.Request, key, value interface{}) *http.Request {
+// WithValue replaces request's context with a copy in which the value associated with key is val
+func WithValue(r *http.Request, key, value interface{}) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), key, value))
 }
 
-// Get calls Value() method on request's context and returns the result
-func Get(r *http.Request, key interface{}) interface{} {
+// Value conveniently calls the Value method on the request's context
+func Value(r *http.Request, key interface{}) interface{} {
 	return r.Context().Value(key)
 }
 

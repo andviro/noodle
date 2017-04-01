@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/andviro/noodle/adapt/gorilla"
-	mw "github.com/andviro/noodle/middleware"
+	"gopkg.in/andviro/noodle.v2/adapt/gorilla"
+	mw "gopkg.in/andviro/noodle.v2/middleware"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"

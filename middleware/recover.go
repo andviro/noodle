@@ -20,15 +20,17 @@ func (r RecoverError) String() string {
 	return fmt.Sprintf("%v\n%s", r.Value, string(r.StackTrace))
 }
 
-// Recover is a basic middleware that catches panics and converts them into
-// errors
-func Recover(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if e := recover(); e != nil {
-				_ = RecoverError{e, debug.Stack()}
-			}
-		}()
-		next(w, r)
+// Recover is a basic middleware that catches panics and passes them to the
+// pre-defined error handler func
+func Recover(f func(error)) {
+	return func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			defer func() {
+				if e := recover(); e != nil {
+					f(RecoverError{e, debug.Stack()})
+				}
+			}()
+			next(w, r)
+		}
 	}
 }

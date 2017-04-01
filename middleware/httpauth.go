@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/andviro/noodle"
+	"gopkg.in/andviro/noodle.v2"
 	"net/http"
 	"net/url"
 )
@@ -19,13 +19,13 @@ func HTTPAuth(realm string, authFunc func(username, password string) bool) noodl
 				return
 			}
 			// Inject user name into request context
-			next(w, noodle.Set(r, userKey, username))
+			next(w, noodle.WithValue(r, userKey, username))
 		}
 	}
 }
 
 // GetUser extract authentication information from context
 func GetUser(r *http.Request) string {
-	res, _ := noodle.Get(r, userKey).(string)
+	res, _ := noodle.Value(r, userKey).(string)
 	return res
 }

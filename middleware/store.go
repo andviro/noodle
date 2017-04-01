@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/andviro/noodle"
-	"github.com/andviro/noodle/store"
+	"gopkg.in/andviro/noodle.v2"
+	"gopkg.in/andviro/noodle.v2/store"
 	"net/http"
 )
 
@@ -10,12 +10,12 @@ import (
 // request context
 func LocalStore(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		next(w, noodle.Set(r, storeKey, store.New()))
+		next(w, noodle.WithValue(r, storeKey, store.New()))
 	}
 }
 
 // GetStore extracts common store from context
 func GetStore(r *http.Request) *store.Store {
-	res, _ := noodle.Get(r, storeKey).(*store.Store)
+	res, _ := noodle.Value(r, storeKey).(*store.Store)
 	return res
 }

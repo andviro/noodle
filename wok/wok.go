@@ -2,7 +2,7 @@ package wok
 
 import (
 	"context"
-	"github.com/andviro/noodle"
+	"gopkg.in/andviro/noodle.v2"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
@@ -67,5 +67,5 @@ func (wok *Wok) Group(prefix string, mws ...noodle.Middleware) *Wok {
 
 // Var returns route variable for context or empty string
 func Var(r *http.Request, name string) string {
-	return noodle.Get(r, paramKey).(httprouter.Params).ByName(name)
+	return noodle.Value(r, paramKey).(httprouter.Params).ByName(name)
 }

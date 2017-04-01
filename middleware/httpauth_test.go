@@ -1,8 +1,8 @@
 package middleware_test
 
 import (
-	"github.com/andviro/noodle"
-	mw "github.com/andviro/noodle/middleware"
+	"gopkg.in/andviro/noodle.v2"
+	mw "gopkg.in/andviro/noodle.v2/middleware"
 	"gopkg.in/tylerb/is.v1"
 	"net/http"
 	"net/http/httptest"

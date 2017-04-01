@@ -2,8 +2,8 @@ package adapt_test
 
 import (
 	"fmt"
-	"github.com/andviro/noodle"
-	"github.com/andviro/noodle/adapt"
+	"gopkg.in/andviro/noodle.v2"
+	"gopkg.in/andviro/noodle.v2/adapt"
 	"gopkg.in/tylerb/is.v1"
 	"net/http"
 	"net/http/httptest"
@@ -12,7 +12,7 @@ import (
 
 func noodleMW(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		next(w, noodle.Set(r, "testKey", "testValue"))
+		next(w, noodle.WithValue(r, "testKey", "testValue"))
 	}
 }
 
@@ -26,7 +26,7 @@ func TestNegroniContextPasses(t *testing.T) {
 
 	n := noodle.New(noodleMW, adapt.Negroni(negroniMW)).Then(
 		func(w http.ResponseWriter, r *http.Request) {
-			val, ok := noodle.Get(r, "testKey").(string)
+			val, ok := noodle.Value(r, "testKey").(string)
 			is.True(ok)
 			is.Equal(val, "testValue")
 		},

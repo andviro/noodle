@@ -2,7 +2,7 @@ package noodle_test
 
 import (
 	"fmt"
-	"github.com/andviro/noodle"
+	"gopkg.in/andviro/noodle.v2"
 	"gopkg.in/tylerb/is.v1"
 	"net/http"
 	"net/http/httptest"
@@ -23,7 +23,7 @@ func mwFactory(name string) noodle.Middleware {
 		varValue := name + "value"
 		return func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "%s>", name)
-			next(w, noodle.Set(r, varName, varValue))
+			next(w, noodle.WithValue(r, varName, varValue))
 		}
 	}
 }
@@ -32,7 +32,7 @@ func handlerFactory(name string, keys ...string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%s ", name)
 		for _, key := range keys {
-			fmt.Fprintf(w, "[%s=%v]", key, noodle.Get(r, key))
+			fmt.Fprintf(w, "[%s=%v]", key, noodle.Value(r, key))
 		}
 	}
 }
