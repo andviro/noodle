@@ -73,7 +73,7 @@ func main() {
 }
 ```
 
-A little more involved [example](https://github.com/andviro/noodle/blob/go1.8/examples/wok/main.go)
+A little more involved [example](https://github.com/andviro/noodle/blob/v2/examples/wok/main.go)
 using `wok` subpackage.
 
 ## Using the package
@@ -130,7 +130,7 @@ At any moment `noodle.Chain` can be extended by calling `Use()` method with
 some additional middlewares as arguments. Each `Use()` call creates new
 middleware chain totally independent from parent. The following example extends
 root chain with variables from `gorilla/mux` router. For standalone example of `gorilla/mux` usage
-see [provided sample code](https://github.com/andviro/noodle/blob/go1.8/examples/gorilla/main.go)
+see [provided sample code](https://github.com/andviro/noodle/blob/v2/examples/gorilla/main.go)
 and `adapt/gorilla` subpackage.
 
 ```go
