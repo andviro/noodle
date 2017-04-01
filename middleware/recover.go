@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+
+	"gopkg.in/andviro/noodle.v2"
 )
 
 // RecoverError contains the original error value and a stack trace
@@ -22,7 +24,7 @@ func (r RecoverError) String() string {
 
 // Recover is a basic middleware that catches panics and passes them to the
 // pre-defined error handler func
-func Recover(f func(error)) {
+func Recover(f func(error)) noodle.Middleware {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			defer func() {

@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"gopkg.in/andviro/noodle.v2"
 	"net/http"
 	"net/url"
+
+	"gopkg.in/andviro/noodle.v2"
 )
 
 // HTTPAuth is a middleware factory function that accepts the authentication realm
