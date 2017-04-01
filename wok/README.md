@@ -5,7 +5,7 @@
 A simple and minimalistic (51 LOC in wok.go) web application router based on
 [httprouter](https://github.com/julienschmidt/httprouter). Supports route
 groups, global, per-group and per-route
-[noodle](https://gopkg.in/andviro/noodle.v2) middleware. Compatible `http.HandlerFunc`.
+[noodle](https://gopkg.in/andviro/noodle.v2) middleware. Compatible with `http.HandlerFunc`.
 For a quick start see the [sample application](https://github.com/andviro/noodle/blob/v2/examples/wok/main.go).
 
 ## Root router object
