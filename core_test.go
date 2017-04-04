@@ -86,7 +86,7 @@ func TestWrap(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://localhost", nil)
 	w := httptest.NewRecorder()
 	ctx := context.TODO()
-	ctx = noodle.Wrap(ctx, w, r)
+	ctx = noodle.Wrap(w, r)
 	is.NotNil(ctx)
 	w1, r1 := noodle.Unwrap(ctx)
 	is.Equal(r, r1)

@@ -37,9 +37,9 @@ func Value(r *http.Request, key interface{}) interface{} {
 }
 
 // Wrap saves http.ResponseWriter and *http.Request into context
-func Wrap(ctx context.Context, w http.ResponseWriter, r *http.Request) context.Context {
-	ctx = context.WithValue(ctx, wrKey, wrTuple{w, r})
-	return ctx
+// taken from the original http.Request
+func Wrap(w http.ResponseWriter, r *http.Request) context.Context {
+	return context.WithValue(r.Context(), wrKey, wrTuple{w, r})
 }
 
 // Unwrap extracts http.ResponseWriter and *http.Request from context
