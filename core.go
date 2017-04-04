@@ -5,6 +5,15 @@ import (
 	"net/http"
 )
 
+type wrContextKey struct{}
+
+var wrKey wrContextKey
+
+type wrTuple struct {
+	w http.ResponseWriter
+	r *http.Request
+}
+
 // Middleware behaves like standard closure middleware pattern, only with
 // context-aware handler type
 type Middleware func(http.HandlerFunc) http.HandlerFunc
@@ -25,6 +34,18 @@ func WithValue(r *http.Request, key, value interface{}) *http.Request {
 // Value conveniently calls the Value method on the request's context
 func Value(r *http.Request, key interface{}) interface{} {
 	return r.Context().Value(key)
+}
+
+// Wrap saves http.ResponseWriter and *http.Request into context
+func Wrap(ctx context.Context, w http.ResponseWriter, r *http.Request) context.Context {
+	ctx = context.WithValue(ctx, wrKey, wrTuple{w, r})
+	return ctx
+}
+
+// Unwrap extracts http.ResponseWriter and *http.Request from context
+func Unwrap(ctx context.Context) (w http.ResponseWriter, r *http.Request) {
+	wr := ctx.Value(wrKey).(wrTuple)
+	return wr.w, wr.r
 }
 
 // Use appends its parameters to middleware chain. Returns new separate

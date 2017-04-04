@@ -1,6 +1,7 @@
 package noodle_test
 
 import (
+	"context"
 	"fmt"
 	"gopkg.in/andviro/noodle.v2"
 	"gopkg.in/tylerb/is.v1"
@@ -77,4 +78,17 @@ func TestThen(t *testing.T) {
 		fmt.Fprintf(w, "Abracadabra")
 	})
 	is.Equal("Abracadabra", RunHTTP(h))
+}
+
+func TestWrap(t *testing.T) {
+	is := is.New(t)
+
+	r, _ := http.NewRequest("GET", "http://localhost", nil)
+	w := httptest.NewRecorder()
+	ctx := context.TODO()
+	ctx = noodle.Wrap(ctx, w, r)
+	is.NotNil(ctx)
+	w1, r1 := noodle.Unwrap(ctx)
+	is.Equal(r, r1)
+	is.Equal(w, w1)
 }
