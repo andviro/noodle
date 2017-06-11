@@ -2,8 +2,8 @@ package wok
 
 import (
 	"context"
-	"gopkg.in/andviro/noodle.v2"
 	"github.com/julienschmidt/httprouter"
+	"gopkg.in/andviro/noodle.v2"
 	"net/http"
 )
 
@@ -17,6 +17,11 @@ type Wok struct {
 
 // RouteClosure is a convenience type that allows setting route handlers by calling the function
 type RouteClosure func(http.HandlerFunc)
+
+// Handle allows route closure to attach a http.Handler
+func (rc RouteClosure) Handle(h http.Handler) {
+	rc(h.ServeHTTP)
+}
 
 type key int
 
