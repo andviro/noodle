@@ -3,14 +3,17 @@ package render
 import (
 	"encoding/json"
 	"encoding/xml"
-	"gopkg.in/andviro/noodle.v2"
 	"html/template"
 	"io"
 	"net/http"
 	"sync"
+
+	"gopkg.in/andviro/noodle.v2"
 )
 
-var renderKey int = 0
+type key struct{}
+
+var renderKey key
 
 type renderResult struct {
 	mu   sync.RWMutex // guards data

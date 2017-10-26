@@ -10,9 +10,9 @@ import (
 	"gopkg.in/andviro/noodle.v2"
 )
 
-type key int
+type key struct{}
 
-const bindKey key = iota
+var bindKey key
 
 type decoderResult struct {
 	val interface{}
