@@ -2,18 +2,22 @@ package bind
 
 import (
 	"encoding/json"
-	"github.com/ajg/form"
-	"gopkg.in/andviro/noodle.v2"
 	"io"
 	"net/http"
 	"reflect"
+
+	"github.com/ajg/form"
+	"gopkg.in/andviro/noodle.v2"
 )
 
 type key int
 
-var (
-	bindKey key = 0
-)
+const bindKey key = iota
+
+type decoderResult struct {
+	val interface{}
+	err error
+}
 
 // Constructor is a generic function modelled after json.NewDecoder
 type Constructor func(io.Reader) Decoder
@@ -37,15 +41,13 @@ func Generic(dc Constructor) func(interface{}) noodle.Middleware {
 	return func(model interface{}) noodle.Middleware {
 		typeModel := reflect.TypeOf(model)
 		if typeModel.Kind() == reflect.Ptr {
-			panic("Bind to pointer is not allowed")
+			panic("bind to pointer is not allowed")
 		}
 		return func(next http.HandlerFunc) http.HandlerFunc {
 			return func(w http.ResponseWriter, r *http.Request) {
-				res := reflect.New(typeModel).Interface()
-				err := dc(r.Body).Decode(res)
-				if err != nil {
-					return
-				}
+				var res decoderResult
+				res.val = reflect.New(typeModel).Interface()
+				res.err = dc(r.Body).Decode(res.val)
 				next(w, noodle.WithValue(r, bindKey, res))
 			}
 		}
@@ -60,7 +62,18 @@ var JSON = Generic(jsonC)
 // and injects parsed object into context
 var Form = Generic(formC)
 
-// GetData extracts data parsed from upstream Bind operation
-func GetData(r *http.Request) interface{} {
-	return noodle.Value(r, bindKey)
+// GetData extracts data parsed from upstream Bind operation, discarding
+// decoding error.  Deprecated in favor of Get() function.
+func GetData(r *http.Request) (res interface{}) {
+	res, _ = Get(r)
+	return
+}
+
+// Get extracts data parsed from upstream Bind operation, along with the decode error.
+func Get(r *http.Request) (val interface{}, err error) {
+	res, ok := noodle.Value(r, bindKey).(decoderResult)
+	if !ok {
+		return
+	}
+	return res.val, res.err
 }
