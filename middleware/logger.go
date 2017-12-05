@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"gopkg.in/andviro/noodle.v2"
 )
 
 var writers sync.Pool
@@ -58,25 +60,30 @@ func init() {
 	}
 }
 
-// Logger is a middleware that logs requests, along with
-// request URI, HTTP status code, handler return value and request timing
-func Logger(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		lw := writers.Get().(*logWriter)
-		lw.ResponseWriter = w
-		lw.code = 0
-		lw.headerWritten = false
-		defer writers.Put(lw)
+// NewLogger constructs logger with arbitrary output function
+func NewLogger(f func(string, ...interface{})) noodle.Middleware {
+	return func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			lw := writers.Get().(*logWriter)
+			lw.ResponseWriter = w
+			lw.code = 0
+			lw.headerWritten = false
+			defer writers.Put(lw)
 
-		url := r.URL.String() // further calls may modify request URL
-		start := time.Now()
-		next(lw, r)
-		end := time.Now()
-		remoteAddr := GetRealIP(r) // try to get client address from middleware
-		if remoteAddr == "" {
-			remoteAddr = r.RemoteAddr
+			url := r.URL.String() // further calls may modify request URL
+			start := time.Now()
+			next(lw, r)
+			end := time.Now()
+			remoteAddr := GetRealIP(r) // try to get client address from middleware
+			if remoteAddr == "" {
+				remoteAddr = r.RemoteAddr
+			}
+			log.Printf("%s %s (%d) from %s [%s]", r.Method, url, lw.Code(), remoteAddr, end.Sub(start))
+			return
 		}
-		log.Printf("%s %s (%d) from %s [%s]", r.Method, url, lw.Code(), remoteAddr, end.Sub(start))
-		return
 	}
 }
+
+// Logger is a middleware that logs requests, along with
+// request URI, HTTP status code, handler return value and request timing
+var Logger = NewLogger(log.Printf)
