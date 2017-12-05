@@ -78,7 +78,7 @@ func NewLogger(f func(string, ...interface{})) noodle.Middleware {
 			if remoteAddr == "" {
 				remoteAddr = r.RemoteAddr
 			}
-			log.Printf("%s %s (%d) from %s [%s]", r.Method, url, lw.Code(), remoteAddr, end.Sub(start))
+			f("%s %s (%d) from %s [%s]", r.Method, url, lw.Code(), remoteAddr, end.Sub(start))
 			return
 		}
 	}
