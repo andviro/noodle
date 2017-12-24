@@ -1,12 +1,13 @@
 # Noodle
 
-## Version 2 and deprecation warning
+## Migration to the new version
 
-The release of Go 1.7 greatly simplified use of contexts in HTTP handlers. Further development of
-Noodle is continued in branch [v2](https://github.com/andviro/noodle/tree/v2), making the master
-branch obsolete. This branch is currently being maintained only to avoid breakage of old code.
-Please address your pull requests and issues to the new and improved [Noodle
-v2](https://gopkg.in/andviro/noodle.v2).
+The release of Go 1.7 greatly simplified use of contexts in HTTP handlers.
+Further development of Noodle is continued in separate Github organization
+@go-noodle, making this project and its branches obsolete. It is currently
+being maintained only to avoid breakage of old code. Please address your pull
+requests and issues to the new and improved [Noodle
+project](https://github.com/go-noodle/noodle).
 
 [![Build Status](https://travis-ci.org/andviro/noodle.svg?branch=master)](https://travis-ci.org/andviro/noodle) 
 [![Coverage](http://gocover.io/_badge/github.com/andviro/noodle?0)](http://gocover.io/github.com/andviro/noodle)  
