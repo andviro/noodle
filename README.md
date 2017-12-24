@@ -4,7 +4,7 @@
 
 The release of Go 1.7 greatly simplified use of contexts in HTTP handlers.
 Further development of Noodle is continued in separate Github organization
-@go-noodle, making this project and its branches obsolete. It is currently
+[go-noodle](https://github.com/go-noodle), making this project and its branches obsolete. It is currently
 being maintained only to avoid breakage of old code. Please address your pull
 requests and issues to the new and improved [Noodle
 project](https://github.com/go-noodle/noodle).
