@@ -1,5 +1,9 @@
 # Noodle
 
+## Notice of migration
+
+To further adapt to modern Golang vendoring tools such as [dep](https://github.com/golang/dep), Noodle development is being split into various sub-projects under umbrella Github organization @go-noodle. Please use new and improved [noodle](https://github.com/go-noodle/noodle) and [wok](https://github.com/go-noodle/noodle) for your new projects and address pull requests and issues there.
+
 [![Build
 Status](https://travis-ci.org/andviro/noodle.svg?branch=master)](https://travis-ci.org/andviro/noodle)
 [![Coverage](http://gocover.io/_badge/gopkg.in/andviro/noodle.v2?0)](http://gocover.io/gopkg.in/andviro/noodle.v2)
